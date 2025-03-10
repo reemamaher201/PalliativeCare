@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Medicine;
 use App\Models\Patient;
+use App\Models\Provider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -64,7 +66,40 @@ class UserController extends Controller
             'token' => $token,
         ], 201);
     }
-
+//    public function login(Request $request)
+//    {
+//        $request->validate([
+//            'identity_number' => 'required|string',
+//            'password' => 'required|string'
+//        ]);
+//
+//        $user = User::where('identity_number', $request->input('identity_number'))->first();
+//
+//        if (!$user) {
+//            return response()->json(['error' => 'Invalid ID'], 401);
+//        }
+//
+//        if (!Hash::check($request->input('password'), $user->password)) {
+//            return response()->json(['error' => 'Wrong password'], 401);
+//        }
+////
+////        if (!in_array($user->user_type, [0, 1, 2, 3])) {
+////            return response()->json(['error' => 'غير مسموح بالدخول لهذا النوع من المستخدمين'], 403);
+////        }
+//        // تحقق إضافي إذا لزم (مثال: إذا كان يجب تفعيل الحساب)
+//        // if ($user->status != 1) {
+//        //     return response()->json(['error' => 'الحساب غير مفعل'], 401);
+//        // }
+//
+//        $token = JWTAuth::fromUser($user);
+//
+//        return response()->json([
+//            'message' => 'User Login Successfully',
+//            'user' => $user->makeHidden(['password']),
+//            'user_type' => $user->user_type, // سيرسل القيمة 3 للادمن
+//            'token' => $token
+//        ]);
+//    }
 
     public function login(Request $request)
     {
@@ -203,7 +238,7 @@ class UserController extends Controller
     public function showpatient(): JsonResponse
     {
         // جلب المرضى مع المستخدمين المرتبطين بهم، وتحديد نوع المستخدم = 2 (مريض)
-        $patients = Patient::with('user:id,name')
+        $patients = Patient::with('user:identity_number,name,phoneNumber')
             ->whereHas('user', function ($query) {
                 $query->where('user_type', 2);
             })
@@ -214,11 +249,10 @@ class UserController extends Controller
             return [
                 'id' => $patient->id,
                 'name' => $patient->name,
-                'nationalId' => $patient->identity_number, // استخدم identity_number بدلاً من nationalId
-                'dateOfBirth' => $patient->birth_date, // استخدم birth_date بدلاً من dateOfBirth
-                'phoneNumber' => $patient->phoneNumber, // الوصول إلى رقم الهاتف من جدول users
+                'identity_number' => $patient->identity_number, // استخدم identity_number بدلاً من nationalId
+                'birth_date' => $patient->birth_date, // استخدم birth_date بدلاً من dateOfBirth
+                'phoneNumber' => optional($patient->user)->phoneNumber, // الوصول إلى رقم الهاتف من جدول users
                 'email' => optional($patient->user)->email, // الوصول إلى البريد الإلكتروني من جدول users
-//                'user_id' => optional($patient->user)->id, // الوصول إلى id المستخدم من جدول users
                 'created_at' => $patient->created_at,
                 'updated_at' => $patient->updated_at,
             ];
@@ -226,8 +260,6 @@ class UserController extends Controller
 
         return response()->json($result->values());
     }
-
-
     public function storepatient(Request $request)
     {
         DB::beginTransaction();
@@ -284,6 +316,146 @@ class UserController extends Controller
             DB::rollBack();
             Log::error("Error adding patient: " . $e->getMessage());
             return response()->json(['message' => 'حدث خطأ أثناء إضافة المريض: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        // التحقق من صحة البيانات
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phoneNumber' => 'required|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'care_type' => 'nullable|string|max:255',
+            'gender' => 'nullable|string|in:male,female',
+            'identity_number' => 'required|string|max:50|unique:users,identity_number,' . $id // تحقق من تميز رقم الهوية
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        // البحث عن المريض
+        $patient = Patient::find($id);
+        if ($patient) {
+            // تخزين الهوية القديمة
+            $oldIdentityNumber = $patient->identity_number;
+
+            // تحديث بيانات المريض
+            $patient->update([
+                'identity_number' => $request->identity_number,
+                'name' => $request->name,
+                'address' => $request->address,
+                'birth_date' => $request->birth_date,
+                'care_type' => $request->care_type,
+                'gender' => $request->gender,
+            ]);
+
+            // تحديث بيانات المستخدم
+            $user = User::where('identity_number', $oldIdentityNumber)->first();
+            if ($user) {
+                $user->update([
+                    'identity_number' => $request->identity_number,
+                    'name' => $request->name,
+                    'phoneNumber' => $request->phoneNumber,
+                ]);
+            }
+
+            return response()->json(['message' => 'تم تحديث بيانات المريض والمستخدم بنجاح', 'patient' => $patient]);
+        }
+
+        return response()->json(['message' => 'لم يتم العثور على المريض'], 404);
+    }
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            // فحص رمز JWT واسترجاع المستخدم المصادق عليه
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // فحص نوع المستخدم (تغيير الشرط إلى 0)
+            if ($authUser->user_type !== 0) {
+                DB::rollBack();
+                return response()->json(['message' => 'غير مصرح لك بحذف المريض'], 403);
+            }
+
+            $patient = Patient::find($id);
+
+            if (!$patient) {
+                DB::rollBack();
+                return response()->json(['message' => 'لم يتم العثور على المريض'], 404);
+            }
+
+            $user = User::where('identity_number', $patient->identity_number)->first();
+
+            if (!$user) {
+                DB::rollBack();
+                return response()->json(['message' => 'لم يتم العثور على المستخدم المرتبط بالمريض'], 404);
+            }
+
+            // حذف المريض أولاً
+            $patient->delete();
+
+            // ثم حذف المستخدم
+            $user->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'تم حذف المريض والمستخدم بنجاح']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error deleting provider: " . $e->getMessage());
+            return response()->json(['message' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function destroyMedicine($id)
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            if ($authUser->user_type !== 0) {
+                return response()->json(['message' => 'غير مصرح لك بحذف الدواء'], 403);
+            }
+
+            $medicine = Medicine::find($id);
+
+            if (!$medicine) {
+                return response()->json(['message' => 'لم يتم العثور على الدواء'], 404);
+            }
+
+            $medicine->delete();
+
+            return response()->json(['message' => 'تم حذف الدواء بنجاح']);
+        } catch (\Exception $e) {
+            Log::error("Error deleting medicine: " . $e->getMessage());
+            return response()->json(['message' => 'حدث خطأ أثناء حذف الدواء: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateMedicine(Request $request, $id)
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            if ($authUser->user_type !== 0) {
+                return response()->json(['message' => 'غير مصرح لك بتعديل الدواء'], 403);
+            }
+
+            $medicine = Medicine::find($id);
+
+            if (!$medicine) {
+                return response()->json(['message' => 'لم يتم العثور على الدواء'], 404);
+            }
+
+            $medicine->update($request->all());
+
+            return response()->json(['message' => 'تم تحديث الدواء بنجاح', 'medicine' => $medicine]);
+        } catch (\Exception $e) {
+            Log::error("Error updating medicine: " . $e->getMessage());
+            return response()->json(['message' => 'حدث خطأ أثناء تعديل الدواء: ' . $e->getMessage()], 500);
         }
     }
 }

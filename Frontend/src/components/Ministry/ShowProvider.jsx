@@ -17,6 +17,14 @@ const ShowProvider = () => {
     const [errorMessage, setErrorMessage] = useState(null); // حالة لرسالة الخطأ
     const [successMessage, setSuccessMessage] = useState(null); // حالة لرسالة النجاح
     const [deletionAttempted, setDeletionAttempted] = useState(false); // حالة لتتبع محاولة الحذف
+    const [editModalIsOpen, setEditModalIsOpen] = useState(false);
+    const [providerToEdit, setProviderToEdit] = useState(null);
+    const [editedProviderData, setEditedProviderData] = useState({
+        name: "",
+        username: "",
+        email: "",
+        phoneNumber: "",
+    });
 
     useEffect(() => {
         fetchData();
@@ -99,9 +107,69 @@ const ShowProvider = () => {
         openModal(id);
     };
 
-    const handleEdit = (id) => {
-        console.log("تعديل المزود برقم:", id);
+    const openEditModal = (provider) => {
+        setProviderToEdit(provider);
+        setEditedProviderData({
+            name: provider.name,
+            username: provider.username,
+            email: provider.email,
+            phoneNumber: provider.phoneNumber,
+        });
+        setEditModalIsOpen(true);
     };
+
+    const closeEditModal = () => {
+        setEditModalIsOpen(false);
+        setProviderToEdit(null);
+        setErrorMessage(null);
+        setSuccessMessage(null);
+    };
+
+    const handleEditChange = (e) => {
+        setEditedProviderData({
+            ...editedProviderData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const confirmEdit = async () => {
+        setIsDeleting(true);
+        setErrorMessage(null);
+        setSuccessMessage(null);
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.put(
+                `http://127.0.0.1:8000/api/updateprovider/${providerToEdit.id}`,
+                editedProviderData,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (response.status === 200) {
+                fetchData();
+                setSuccessMessage("تم تحديث المزود بنجاح.");
+            } else {
+                setErrorMessage(`حدث خطأ أثناء التحديث: رمز الحالة ${response.status}`);
+            }
+        } catch (error) {
+            console.error("خطأ في التحديث:", error);
+            if (error.response) {
+                setErrorMessage(`حدث خطأ أثناء التحديث: ${error.response.data.message || error.message}`);
+            } else {
+                setErrorMessage(`حدث خطأ أثناء التحديث: ${error.message}`);
+            }
+        } finally {
+            setIsDeleting(false);
+            setTimeout(() => {
+                closeEditModal();
+            }, 1000);
+        }
+    };
+
+    const handleEdit = (provider) => {
+        openEditModal(provider);
+    };
+
 
     if (loading) return <div>جاري التحميل...</div>;
     if (error) return <div>حدث خطأ: {error.message}</div>;
@@ -145,7 +213,67 @@ const ShowProvider = () => {
                     )}
                 </div>
             </Modal>
-
+            <Modal
+                isOpen={editModalIsOpen}
+                onRequestClose={closeEditModal}
+                contentLabel="تعديل المزود"
+                className="Modal"
+                overlayClassName="Overlay"
+            >
+                <div className="flex flex-col items-center justify-center p-6">
+                    {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
+                    {successMessage && <div className="text-green-500 mb-4">{successMessage}</div>}
+                    <h2 className="text-lg font-bold mb-4">تعديل بيانات المزود</h2>
+                    <input
+                        type="text"
+                        name="name"
+                        value={editedProviderData.name}
+                        onChange={handleEditChange}
+                        placeholder="اسم المزود"
+                        className="w-full px-4 py-2 border rounded-lg mb-2"
+                    />
+                    <input
+                        type="text"
+                        name="username"
+                        value={editedProviderData.username}
+                        onChange={handleEditChange}
+                        placeholder="اسم المستخدم"
+                        className="w-full px-4 py-2 border rounded-lg mb-2"
+                    />
+                    <input
+                        type="email"
+                        name="email"
+                        value={editedProviderData.email}
+                        onChange={handleEditChange}
+                        placeholder="البريد الإلكتروني"
+                        className="w-full px-4 py-2 border rounded-lg mb-2"
+                    />
+                    <input
+                        type="text"
+                        name="phoneNumber"
+                        value={editedProviderData.phoneNumber}
+                        onChange={handleEditChange}
+                        placeholder="رقم الجوال"
+                        className="w-full px-4 py-2 border rounded-lg mb-4"
+                    />
+                    <div className="flex space-x-4">
+                        <button
+                            className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition"
+                            onClick={confirmEdit}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? "جاري التحديث..." : "تأكيد"}
+                        </button>
+                        <button
+                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                            onClick={closeEditModal}
+                            disabled={isDeleting}
+                        >
+                            إلغاء
+                        </button>
+                    </div>
+                </div>
+                </Modal>
             {/* الشريط الجانبي */}
             <Sidebar/>
 
@@ -202,7 +330,7 @@ const ShowProvider = () => {
                                 <td className="px-4 py-2 text-right">
                                     <i
                                         className="fas fa-edit text-cyan-700 cursor-pointer"
-                                        onClick={() => handleEdit(provider.id)}
+                                        onClick={() => handleEdit(provider)}
                                     ></i>
                                 </td>
                                 <td className="px-4 py-2 text-right">

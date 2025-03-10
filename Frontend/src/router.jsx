@@ -11,10 +11,16 @@ import ShowPatients from "./components/Ministry/ShowPatinets.jsx";
 import AddPatient from "./components/Ministry/AddPatient.jsx";
 import ShowMedicines from "./components/Ministry/ShowMedicines.jsx";
 import AddMedicine from "./components/Ministry/AddMedicine.jsx";
+import AdminDashboard from "./components/Admin/AdminDashboard.jsx";
+import ShowNotifications from "./components/Ministry/ShowNotifications.jsx";
+import CreateNotification from "./components/Ministry/CreateNotification.jsx";
 
 const RouterComponent = ()=>{
     return(
         <Routes>
+            {/*Amin*/}
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
             {/*Patients*/}
             <Route path="/" element={<LandingPage/>}/>
             <Route path="/register" element={<Register/>}/>
@@ -29,6 +35,8 @@ const RouterComponent = ()=>{
             <Route path="/addpatient" element={<AddPatient/>}/>
             <Route path="/showmedicines" element={<ShowMedicines/>}/>
             <Route path="/addmedicien" element={<AddMedicine/>}/>
+                <Route path="/showotification" element={<ShowNotifications/>}/>
+                <Route path="/addnotification" element={<CreateNotification/>}/>
 
             {/*Providers*/}
             <Route path="/dashboardS" element={<DashboardS/>}/>

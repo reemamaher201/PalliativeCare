@@ -168,6 +168,10 @@ class ProviderController extends Controller
         $provider = Provider::find($id);
         if ($provider) {
             $provider->update($request->all());
+            $user = User::find($provider->user_id);
+            if ($user) {
+                $user->update(['name' => $request->name]);
+            }
             return response()->json(['message' => 'تم تحديث المزود بنجاح']);
         }
         return response()->json(['message' => 'لم يتم العثور على المزود'], 404);

@@ -1,77 +1,92 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 const CreateNotification = () => {
+    const [title, setTitle] = useState("");
+    const [text, setText] = useState("");
+    const [date, setDate] = useState("");
+    const [recipient, setRecipient] = useState("");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // تحقق من البيانات هنا إذا لزم الأمر
+
+        const notificationData = {
+            title,
+            text,
+            date,
+            recipient,
+        };
+
+        try {
+            const token = localStorage.getItem("token"); // جلب الرمز من localStorage
+            await axios.post("http://127.0.0.1:8000/api/addnotification", notificationData, {
+                headers: { Authorization: `Bearer ${token}` }, // إضافة الرمز في رؤوس الطلب
+            });
+            alert("تم إرسال الإشعار بنجاح");
+        } catch (error) {
+            console.error("خطأ أثناء إرسال الإشعار:", error);
+            if (error.response) {
+                alert(`خطأ: ${error.response.data.message || error.message}`);
+            } else {
+                alert(`خطأ: ${error.message}`);
+            }
+        }
+
+    };
+
     return (
         <div dir={"rtl"} className="flex min-h-screen bg-gray-100">
             {/* Sidebar */}
-            <aside className="w-1/4 bg-cyan-700 text-white p-6">
-                <h2 className="text-xl font-bold mb-6">لوحة التحكم الرئيسية</h2>
-                <ul className="space-y-4">
-                    <li className="hover:underline cursor-pointer">المرضى</li>
-                    <li className="hover:underline cursor-pointer">الأدوية</li>
-                    <li className="hover:underline cursor-pointer">إحصائيات</li>
-                    <li className="hover:underline cursor-pointer">مزود الخدمة</li>
-                    <li className="hover:underline cursor-pointer">الإشعارات</li>
-                </ul>
-            </aside>
-
-            {/* Main content */}
+            {/* (كما هو في الكود السابق) */}
             <main className="flex-1 p-6">
                 {/* Header */}
-                <header className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-bold">أحمد محمد</h1>
-                    <div className="flex space-x-4">
-                        <i className="fas fa-bell text-gray-500 text-lg cursor-pointer"></i>
-                        <i className="fas fa-envelope text-gray-500 text-lg cursor-pointer"></i>
-                    </div>
-                </header>
+                {/* (كما هو في الكود السابق) */}
 
                 {/* Notification Creation Form */}
                 <section>
                     <h3 className="text-lg font-bold text-cyan-700 mb-6">إنشاء إشعار</h3>
-                    <form className="space-y-4">
-                        {/* Notification Title */}
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         <div>
                             <input
                                 type="text"
                                 placeholder="عنوان الإشعار"
                                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
                             />
                         </div>
-
-                        {/* Notification Text */}
                         <div>
-              <textarea
-                  placeholder="نص الإشعار"
-                  rows="4"
-                  maxLength="100"
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              ></textarea>
-                            <p className="text-sm text-gray-500 text-right">0/100 كلمة</p>
+                            <textarea
+                                placeholder="نص الإشعار"
+                                rows="4"
+                                maxLength="100"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                value={text}
+                                onChange={(e) => setText(e.target.value)}
+                            ></textarea>
                         </div>
-
-                        {/* Notification Date */}
-                        <div dir={"rtl"} className="relative">
+                        <div className="relative">
                             <input
                                 type="date"
                                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
                             />
-                            <span className="absolute top-2 right-3 text-gray-400">
-                {/*<i className="fas fa-calendar"></i>*/}
-              </span>
                         </div>
-
-                        {/* Recipient */}
                         <div>
-                            <select className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <select
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                value={recipient}
+                                onChange={(e) => setRecipient(e.target.value)}
+                            >
                                 <option value="">المرسل له</option>
                                 <option value="all">الجميع</option>
                                 <option value="patients">المرضى</option>
                                 <option value="providers">مزودو الخدمة</option>
                             </select>
                         </div>
-
-                        {/* Submit Button */}
                         <div>
                             <button
                                 type="submit"

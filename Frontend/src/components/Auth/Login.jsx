@@ -37,6 +37,8 @@ const Login = () => {
                 window.location.href = "/dashboardS";
             } else if (userType === 2) {
                 window.location.href = "/user-profile";
+            } else if (userType === 3) { // أضف هذا الشرط للادمن
+                window.location.href = "/admin-dashboard";
             } else {
                 setError("نوع المستخدم غير معروف.");
             }
