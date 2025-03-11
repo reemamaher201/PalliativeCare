@@ -11,25 +11,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('landing_pages', function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->json('navbar');
-            $table->json('about');
-            $table->json('features');
-            $table->json('services');
-            $table->json('blogs');
-            $table->json('footer');
-            $table->json('colors');
+            $table->string('title');
+            $table->text('content')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }
-
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('landing_pages');
+        Schema::dropIfExists('sections');
     }
 };

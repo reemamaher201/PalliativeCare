@@ -4,48 +4,36 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\LandingPage;
-use Illuminate\Support\Facades\Validator;
 
-class AdminDashboardController extends Controller
-{
-    // عرض بيانات صفحة الهبوط
-    public function getLandingPage()
-    {
-        $landingPage = LandingPage::first();
-        return response()->json($landingPage);
+class AdminDashboardController extends Controller {
+    public function __construct() {
+        $this->middleware('auth:api');
+        $this->middleware('admin')->except(['show']);
     }
 
-    // تحديث بيانات صفحة الهبوط
-    public function updateLandingPage(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
+    // جلب بيانات الصفحة
+    public function show() {
+        return response()->json(LandingPage::first());
+    }
+
+    // تحديث بيانات الصفحة
+    public function update(Request $request) {
+        $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'sections' => 'nullable|array',
-            'colors' => 'nullable|array',
+            'about' => 'required|string',
+            'features' => 'required|array',
+            'services' => 'required|array',
+            'tips' => 'required|array',
+            'footer' => 'required|array',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $landingPage = LandingPage::first();
+        if (!$landingPage) {
+            $landingPage = new LandingPage();
         }
 
-        $landingPage = LandingPage::firstOrNew([]);
-
-        // تحديث البيانات
-        $landingPage->title = $request->input('title');
-        $landingPage->description = $request->input('description');
-        $landingPage->sections = $request->input('sections');
-        $landingPage->colors = $request->input('colors');
-
-        // تحديث الصورة إذا تم تحميلها
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('landing_images', 'public');
-            $landingPage->image = $imagePath;
-        }
-
-        $landingPage->save();
-
-        return response()->json(['message' => 'تم تحديث صفحة الهبوط بنجاح']);
+        $landingPage->update($request->all());
+        return response()->json(['message' => 'تم تحديث صفحة الهبوط بنجاح', 'data' => $landingPage]);
     }
 }
+

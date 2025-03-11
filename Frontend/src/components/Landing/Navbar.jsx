@@ -1,15 +1,17 @@
 import React from "react";
-import { Link } from "react-router-dom"; // استيراد Link
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({ logo, background_color }) => {
     return (
-        <nav dir="rtl" className="bg-cyan-700 text-white py-4 px-8 rounded-lg">
+        <nav dir="rtl" className="bg-cyan-700 text-white py-4 px-8 rounded-lg" style={{ backgroundColor: background_color }}>
             <div className="container mx-auto flex justify-between items-center">
-                <img
-                    src="src/assets/logo.png" // استبدل هذا الرابط برابط الصورة الفعلي
-                    alt="logo"
-                    className="rounded-lg w-15 h-15" // ضبط الحجم هنا
-                />
+                {logo && (
+                    <img
+                        src={`http://localhost:8000${logo}`}
+                        alt="logo"
+                        className="rounded-lg w-15 h-15"
+                    />
+                )}
                 <ul className="flex space-x-4">
                     <li>
                         <Link to="/" className="hover:underline">الصفحة الرئيسية</Link>

@@ -1,66 +1,76 @@
-// import React, {useEffect} from "react";
-// import Navbar from "./Navbar.jsx";
-// import AboutSection from "./AboutSection.jsx";
-// import FeaturesSection from "./FeaturesSection.jsx";
-// import ServicesSection from "./ServicesSection.jsx";
-// import BlogSection from "./BlogSection.jsx";
-// import Footer from "./Footer.jsx";
-// import '../../App.css'
-//
-// function LandingPage() {
-//     useEffect(() => {
-//         document.title = "الصفحة الرئيسية";
-//     }, []);
-//     return (
-//
-//         <div className="font-sans">
-//             <Navbar   />   <AboutSection />    <FeaturesSection />
-//             <ServicesSection />
-//             <BlogSection     /> <Footer />  </div>
-//     );
-// }
-//
-// export default LandingPage;
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Navbar from "./Navbar.jsx";
-import AboutSection from "./AboutSection.jsx";
-import FeaturesSection from "./FeaturesSection.jsx";
-import ServicesSection from "./ServicesSection.jsx";
-import BlogSection from "./BlogSection.jsx";
-import Footer from "./Footer.jsx";
-import '../../App.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Navbar from "./Navbar";
+import AboutSection from "./AboutSection";
+import FeaturesSection from "./FeaturesSection";
+import ServicesSection from "./ServicesSection";
+import BlogSection from "./BlogSection";
+import Footer from "./Footer";
 
 function LandingPage() {
-    const [landingPage, setLandingPage] = useState({
-        title: '',
-        description: '',
-        image: null,
-        sections: [],
-        colors: { primary: '#06b6d4', secondary: '#ffffff' },
+    const [settings, setSettings] = useState({
+        logo: "",
+        main_heading: "",
+        main_text: "",
+        footer_text: "",
+        background_color: "",
+        button_color: "#4CAF50", // لون الزر الافتراضي
     });
 
+    const [sections, setSections] = useState([]); // حالة لتخزين الأقسام
+
+    // جلب الإعدادات
     useEffect(() => {
-        fetchLandingPage();
+        axios.get("http://localhost:8000/api/settings")
+            .then((response) => {
+                setSettings(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching settings:", error);
+            });
     }, []);
 
-    const fetchLandingPage = async () => {
-        try {
-            const response = await axios.get('/api/admin/landing-page');
-            setLandingPage(response.data);
-        } catch (error) {
-            console.error('فشل في جلب بيانات صفحة الهبوط:', error);
-        }
-    };
+    // جلب الأقسام
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/sections")
+            .then((response) => {
+                setSections(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching sections:", error);
+            });
+    }, []);
 
     return (
-        <div className="font-sans" style={{ backgroundColor: landingPage.colors.secondary }}>
-            <Navbar colors={landingPage.colors} />
-            <AboutSection landingPage={landingPage} />
-            <FeaturesSection sections={landingPage.sections} />
-            <ServicesSection services={landingPage.sections} />
-            <BlogSection blogs={landingPage.sections} />
-            <Footer colors={landingPage.colors} />
+        <div className="font-sans">
+            <Navbar logo={settings.logo} background_color={settings.background_color} />
+            <AboutSection logo={settings.logo} main_heading={settings.main_heading} main_text={settings.main_text} />
+            <FeaturesSection features={[]} />
+            <ServicesSection services={[]} />
+            <BlogSection blogs={[]} />
+
+            <section className="py-12 px-8" dir="rtl">
+                <div className="container mx-auto text-center">
+                    <h2 className="text-2xl font-bold mb-8 text-gray-800">الأقسام الجديدة</h2>
+                    <div className="grid grid-cols-1  gap-8">
+                        {sections.map((section, index) => (
+                            <div key={index} className="bg-white shadow-md rounded-lg p-6">
+                                <h3 className="text-lg font-bold text-cyan-700 mb-4">{section.title}</h3>
+                                <p className="text-gray-700">{section.content}</p>
+                                {section.image && (
+                                    <img src={`http://localhost:8000${section.image}`} alt={section.title} className="w-full h-32 object-cover mt-4" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <Footer
+                footer_text={settings.footer_text}
+                background_color={settings.background_color}
+                buttonColor={settings.button_color} // تمرير لون الزر
+            />
         </div>
     );
 }
