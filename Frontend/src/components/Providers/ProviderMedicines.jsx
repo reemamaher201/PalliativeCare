@@ -80,10 +80,10 @@ const ProviderMedicines = () => {
                 return;
             }
 
-            // تحديث حالة الدواء إلى "معلق" محليًا
+            // تحديث حالة الدواء إلى "طلب حذف معلق" محليًا
             setMedicines(prevMedicines =>
                 prevMedicines.map(medicine =>
-                    medicine.id === id ? { ...medicine, pending_delete: true } : medicine
+                    medicine.id === id ? { ...medicine, delete_status: 1 } : medicine
                 )
             );
 
@@ -105,6 +105,13 @@ const ProviderMedicines = () => {
         } catch (err) {
             console.error("Error requesting medicine deletion:", err);
             setError(err.response?.data?.message || "حدث خطأ أثناء إرسال طلب الحذف. يرجى المحاولة مرة أخرى.");
+
+            // إذا تم رفض الطلب، قم بإعادة تمكين الأزرار
+            setMedicines(prevMedicines =>
+                prevMedicines.map(medicine =>
+                    medicine.id === id ? { ...medicine, delete_status: 2 } : medicine
+                )
+            );
         }
     };
 
@@ -159,17 +166,16 @@ const ProviderMedicines = () => {
                                     {/* تعطيل زر التعديل إذا كان الدواء في حالة "معلق للحذف" */}
                                     <button
                                         onClick={() => handleEdit(medicine)}
-                                        className={`flex items-center gap-2 justify-center ${medicine.pending_delete ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-500 hover:text-cyan-700'}`}
-                                        disabled={medicine.pending_delete}
+                                        className={`flex items-center gap-2 justify-center ${medicine.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-500 hover:text-cyan-700'}`}
+                                        disabled={medicine.delete_status === 1}
                                     >
                                         <FaEdit />
                                     </button>
 
-                                    {/* تعطيل زر الحذف إذا كان الدواء في حالة "معلق للحذف" */}
                                     <button
                                         onClick={() => handleDelete(medicine.id)}
-                                        className={`flex items-center gap-2 justify-center ${medicine.pending_delete ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-700'}`}
-                                        disabled={medicine.pending_delete}
+                                        className={`flex items-center gap-2 justify-center ${medicine.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-700'}`}
+                                        disabled={medicine.delete_status === 1}
                                     >
                                         <FaTrash />
                                     </button>

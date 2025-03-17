@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\PatientRequest;
 use App\Models\User;
@@ -400,6 +401,8 @@ class PatientController extends Controller
         }
     }
 
+
+
     public function getProviderPatients()
     {
         // التحقق من أن المستخدم الحالي هو مزود
@@ -408,13 +411,13 @@ class PatientController extends Controller
             return response()->json(['error' => 'غير مصرح لك بالوصول إلى هذه البيانات.'], 403);
         }
 
-        // جلب المرضى الذين تمت إضافتهم من قبل المزود الحالي مع بيانات المستخدم
-        $patients = Patient::with('addedBy:id,phoneNumber') // جلب رقم الجوال من جدول users
+        // جلب الأدوية التي أضافها المزود مع معلومات المستخدم ورقم الهاتف
+        $patient = Patient::with('addedBy:id,phoneNumber') // جلب رقم الجوال من جدول users
         ->where('add_by', $user->id)
             ->get();
 
-        // إعادة البيانات مع رقم الجوال من جدول users
-        return response()->json($patients);
+        // إعادة البيانات مع حالة الحذف
+        return response()->json($patient);
     }
 }
 

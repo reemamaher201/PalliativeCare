@@ -6,6 +6,7 @@ use App\Models\Medicine;
 use App\Models\MedicineDeletionRequest;
 use App\Models\MedRequest;
 use App\Models\Patient;
+use App\Models\PatientDeletionRequest;
 use App\Models\PatientRequest;
 use App\Models\Provider;
 use App\Models\User;
@@ -358,11 +359,7 @@ class ProviderController extends Controller
         // جلب الأدوية التي أضافها المزود مع معلومات المستخدم ورقم الهاتف
         $med = Medicine::with('addedBy:id,phoneNumber') // جلب رقم الجوال من جدول users
         ->where('add_by', $user->id)
-            ->get()
-            ->map(function ($medicine) {
-                $medicine->pending_delete = $medicine->delete_request_pending; // افتراض أن لديك هذا العمود في قاعدة البيانات
-                return $medicine;
-            });
+            ->get();
 
         // إعادة البيانات مع حالة الحذف
         return response()->json($med);
@@ -455,47 +452,86 @@ class ProviderController extends Controller
         try {
             $authUser = JWTAuth::parseToken()->authenticate();
 
-            // Check if the user is a provider
+            // التحقق من أن المستخدم مزود
             if ($authUser->user_type !== User::USER_TYPE_PROVIDER) {
                 return response()->json(['error' => 'غير مصرح لك بإرسال طلبات الحذف'], 403);
             }
 
-            // Search for the medicine
+            // البحث عن الدواء
             $medicine = Medicine::find($id);
 
             if (!$medicine) {
                 return response()->json(['error' => 'الدواء غير موجود'], 404);
             }
 
-            // Check if the provider is the one who added the medicine
+            // التحقق من أن المزود هو من أضاف الدواء
             if ($medicine->add_by !== $authUser->id) {
                 return response()->json(['error' => 'غير مصرح لك بحذف هذا الدواء'], 403);
             }
 
-            // Create a deletion request
+            // إنشاء طلب حذف
             MedicineDeletionRequest::create([
                 'medicine_id' => $medicine->id,
                 'provider_id' => $authUser->id,
-                'status' => 'pending', // Request status: pending
+                'status' => 'pending', // حالة الطلب: pending
             ]);
 
-            // Update the medicine's delete_request_pending flag
-            $medicine->delete_request_pending = true;
-            $medicine->save();
+            // تحديث حالة الدواء إلى "طلب حذف معلق"
+            $medicine->update(['delete_status' => 1]);
 
             return response()->json(['message' => 'تم إرسال طلب الحذف بنجاح. انتظر موافقة الوزارة.'], 200);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            return response()->json(['error' => 'Token is Expired'], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            return response()->json(['error' => 'Invalid Token'], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            return response()->json(['error' => 'Token is required'], 401);
         } catch (\Exception $e) {
             Log::error('Error requesting medicine deletion: ' . $e->getMessage());
             return response()->json(['error' => 'حدث خطأ أثناء إرسال طلب الحذف'], 500);
         }
     }
+    public function requestDeletePatient(Request $request, $id): JsonResponse
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
 
+            // التحقق من أن المستخدم مزود
+            if ($authUser->user_type !== User::USER_TYPE_PROVIDER) {
+                return response()->json(['error' => 'غير مصرح لك بإرسال طلبات الحذف'], 403);
+            }
+
+            // البحث عن المريض
+            $patient = Patient::find($id);
+
+            if (!$patient) {
+                return response()->json(['error' => 'المريض غير موجود'], 404);
+            }
+
+            // التحقق من أن المزود هو من أضاف المريض
+            if ($patient->add_by !== $authUser->id) {
+                return response()->json(['error' => 'غير مصرح لك بحذف هذا المريض'], 403);
+            }
+
+            // إنشاء طلب حذف
+            PatientDeletionRequest::create([
+                'patient_id' => $patient->id,
+                'provider_id' => $authUser->id,
+                'status' => 'pending', // حالة الطلب: pending
+            ]);
+
+            // تحديث حالة المريض إلى "طلب حذف معلق"
+            $patient->update(['delete_status' => 1]);
+
+            return response()->json(['message' => 'تم إرسال طلب الحذف بنجاح. انتظر موافقة الوزارة.'], 200);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            Log::error('Token expired: ' . $e->getMessage());
+            return response()->json(['error' => 'انتهت صلاحية التوكن'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            Log::error('Invalid token: ' . $e->getMessage());
+            return response()->json(['error' => 'التوكن غير صالح'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            Log::error('Token required: ' . $e->getMessage());
+            return response()->json(['error' => 'التوكن مطلوب'], 401);
+        } catch (\Exception $e) {
+            Log::error('Error requesting patient deletion: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ غير متوقع أثناء إرسال طلب الحذف: ' . $e->getMessage()], 500);
+        }
+    }
 
     public function getDeletionRequests(): JsonResponse
     {
@@ -516,6 +552,188 @@ class ProviderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error fetching deletion requests: ' . $e->getMessage());
             return response()->json(['error' => 'حدث خطأ أثناء جلب طلبات الحذف'], 500);
+        }
+    }
+    public function getDeletionRequestsp(): JsonResponse
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم وزارة
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['error' => 'غير مصرح لك بعرض طلبات الحذف'], 403);
+            }
+
+            // جلب طلبات الحذف مع معلومات الأدوية والمزودين
+            $deletionRequests = PatientDeletionRequest::with(['patient', 'provider'])
+                ->where('status', 'pending')
+                ->get();
+
+            return response()->json($deletionRequests);
+
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            Log::error('Token expired: ' . $e->getMessage());
+            return response()->json(['error' => 'انتهت صلاحية التوكن'], 401);
+
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            Log::error('Invalid token: ' . $e->getMessage());
+            return response()->json(['error' => 'التوكن غير صالح'], 401);
+
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            Log::error('Token required: ' . $e->getMessage());
+            return response()->json(['error' => 'التوكن مطلوب'], 401);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database query error: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ في قاعدة البيانات.'], 500);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching deletion requests: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ غير متوقع أثناء جلب طلبات الحذف: ' . $e->getMessage()], 500);
+        }
+    }
+    public function approveDeletionRequest($id): JsonResponse
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم وزارة
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['error' => 'غير مصرح لك بالموافقة على طلبات الحذف'], 403);
+            }
+
+            // البحث عن طلب الحذف
+            $deletionRequest = MedicineDeletionRequest::find($id);
+
+            if (!$deletionRequest) {
+                return response()->json(['error' => 'طلب الحذف غير موجود'], 404);
+            }
+
+            // الموافقة على الطلب
+            $deletionRequest->update(['status' => 'approved']);
+
+            // حذف الدواء المرتبط بطلب الحذف
+            $deletionRequest->medicine->delete();
+
+            return response()->json(['message' => 'تمت الموافقة على طلب الحذف وحذف الدواء بنجاح']);
+        } catch (\Exception $e) {
+            Log::error('Error approving deletion request: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ أثناء الموافقة على طلب الحذف'], 500);
+        }
+    }
+
+    public function rejectDeletionRequest($id): JsonResponse
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم وزارة
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['error' => 'غير مصرح لك برفض طلبات الحذف'], 403);
+            }
+
+            // البحث عن طلب الحذف
+            $deletionRequest = MedicineDeletionRequest::find($id);
+
+            if (!$deletionRequest) {
+                return response()->json(['error' => 'طلب الحذف غير موجود'], 404);
+            }
+
+            // رفض الطلب
+            $deletionRequest->update(['status' => 'rejected']);
+
+            // تحديث حالة الدواء إلى "طلب حذف مرفوض"
+            $medicine = $deletionRequest->medicine;
+            $medicine->update(['delete_status' => 2]);
+
+            return response()->json([
+                'message' => 'تم رفض طلب الحذف بنجاح',
+                'medicine' => $medicine, // إرجاع بيانات الدواء المحدثة
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error rejecting deletion request: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ أثناء رفض طلب الحذف'], 500);
+        }
+    }
+
+    public function approveDeletionRequestp($id): JsonResponse
+    {
+        DB::beginTransaction();
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم وزارة
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['error' => 'غير مصرح لك بالموافقة على طلبات الحذف'], 403);
+            }
+
+            // البحث عن طلب الحذف
+            $deletionRequest = PatientDeletionRequest::find($id);
+
+            if (!$deletionRequest) {
+                DB::rollBack();
+                return response()->json(['error' => 'طلب الحذف غير موجود'], 404);
+            }
+
+            // الموافقة على الطلب
+            $deletionRequest->update(['status' => 'approved']);
+
+            // حذف المريض المرتبط بطلب الحذف
+            $patient = $deletionRequest->patient;
+
+            if ($patient) {
+                // حذف المريض من جدول المرضى
+                $patient->delete();
+
+                // حذف المستخدم المرتبط بالمريض (إذا كان موجودًا)
+                $user = User::find($patient->identity_number);
+                if ($user) {
+                    $user->delete();
+                }
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'تمت الموافقة على طلب الحذف وحذف المريض بنجاح']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error approving deletion request: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ أثناء الموافقة على طلب الحذف'], 500);
+        }
+    }
+
+    public function rejectDeletionRequestp($id): JsonResponse
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم وزارة
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['error' => 'غير مصرح لك برفض طلبات الحذف'], 403);
+            }
+
+            // البحث عن طلب الحذف
+            $deletionRequest = PatientDeletionRequest::find($id);
+
+            if (!$deletionRequest) {
+                return response()->json(['error' => 'طلب الحذف غير موجود'], 404);
+            }
+
+            // رفض الطلب
+            $deletionRequest->update(['status' => 'rejected']);
+
+            // تحديث حالة المريض إلى "طلب حذف مرفوض"
+            $patient = $deletionRequest->patient;
+            if ($patient) {
+                $patient->update(['delete_status' => 2]);
+            }
+
+            return response()->json([
+                'message' => 'تم رفض طلب الحذف بنجاح',
+                'patient' => $patient, // إرجاع بيانات المريض المحدثة
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error rejecting deletion request: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ أثناء رفض طلب الحذف'], 500);
         }
     }
 }

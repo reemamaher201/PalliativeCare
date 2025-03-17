@@ -55,7 +55,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/med/reject/{id}', [ProviderController::class, 'rejectMedRequest']);
     Route::get('/med-requests/{id}', [ProviderController::class, 'getMedRequestDetails']);
 
-
+    Route::post('/deletion-requests/{id}/approve', [ProviderController::class, 'approveDeletionRequest']);
+    Route::post('/deletion-requests/{id}/reject', [ProviderController::class, 'rejectDeletionRequest']);
+    Route::post('/deletion-requestsp/{id}/approve', [ProviderController::class, 'approveDeletionRequestp']);
+    Route::post('/deletion-requestsp/{id}/reject', [ProviderController::class, 'rejectDeletionRequestp']);
 // لطلبات المرضى
     Route::put('/patient-requests/{id}', [ProviderController::class, 'updatePatientRequest']);
     Route::delete('/patient-requests/{id}', [ProviderController::class, 'deletePatientRequest']);
@@ -63,10 +66,14 @@ Route::middleware('auth:api')->group(function () {
 // لطلبات الأدوية
     Route::put('/med-requests/{id}', [ProviderController::class, 'updateMedRequest']);
     Route::post('/medicines/{id}/request-delete', [ProviderController::class, 'requestDeleteMedicine']);
+    Route::post('/patients/{id}/request-delete', [ProviderController::class, 'requestDeletePatient']);
+
 
 
 // في ملف routes/api.php
     Route::get('/deletion-requests', [ProviderController::class, 'getDeletionRequests']);
+    Route::get('/deletion-requestsp', [ProviderController::class, 'getDeletionRequestsp']);
+
 
 
     // Routes خاصة بمزودي الخدمة

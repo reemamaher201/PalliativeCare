@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\PatientStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,18 +18,11 @@ class Patient extends Model
         'care_type',
         'gender',
         'add_by', // إضافة add_by إلى الحقول القابلة للتعبئة
+        'delete_status', // إضافة العمود الجديد
+
 
     ];
 
-    protected $casts = [
-        'status' => PatientStatus::class, // تحويل الحالة إلى Enum
-    ];
-
-    // دالة للحصول على نص الحالة
-    public function getStatusLabelAttribute(): string
-    {
-        return $this->status->label();
-    }
     // العلاقة مع جدول المستخدمين
     public function user()
     {
@@ -38,5 +31,10 @@ class Patient extends Model
     public function addedBy()
     {
         return $this->belongsTo(User::class, 'add_by');
+    }
+
+    public function deletionRequests()
+    {
+        return $this->hasMany(PatientDeletionRequest::class, 'patient_id');
     }
 }

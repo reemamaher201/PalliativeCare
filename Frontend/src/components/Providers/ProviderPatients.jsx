@@ -37,6 +37,7 @@ const ProviderPatients = () => {
         }
     };
 
+
     const handleEdit = (patient) => {
         setEditPatient(patient);
         setIsEditModalOpen(true);
@@ -83,13 +84,17 @@ const ProviderPatients = () => {
                 return;
             }
 
-            // إرسال طلب حذف
+            // تحديث حالة المريض إلى "طلب حذف معلق" محليًا
+            setPatients(prevPatients =>
+                prevPatients.map(patient =>
+                    patient.id === id ? { ...patient, delete_status: 1 } : patient
+                )
+            );
+
+            // إرسال طلب الحذف
             const response = await axios.post(
-                "http://127.0.0.1:8000/api/patient-modification-requests",
-                {
-                    patient_id: id,
-                    type: "delete",
-                },
+                `http://127.0.0.1:8000/api/patients/${id}/request-delete`,
+                {},
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -97,12 +102,20 @@ const ProviderPatients = () => {
                 }
             );
 
-            if (response.status === 201) {
-                alert("تم إرسال طلب الحذف بنجاح. انتظر الموافقة من الوزارة.");
+            if (response.status === 200) {
+                alert("تم إرسال طلب الحذف بنجاح. انتظر موافقة الوزارة.");
+                fetchPatients(); // إعادة جلب البيانات لتحديث القائمة من السيرفر
             }
         } catch (err) {
-            console.error("Error deleting patient:", err);
-            setError(err.response?.data?.message || "حدث خطأ أثناء حذف المريض. يرجى المحاولة مرة أخرى.");
+            console.error("Error requesting patient deletion:", err);
+            setError(err.response?.data?.message || "حدث خطأ أثناء إرسال طلب الحذف. يرجى المحاولة مرة أخرى.");
+
+            // إذا تم رفض الطلب، قم بإعادة تمكين الأزرار
+            setPatients(prevPatients =>
+                prevPatients.map(patient =>
+                    patient.id === id ? { ...patient, delete_status: 2 } : patient
+                )
+            );
         }
     };
 
@@ -154,10 +167,20 @@ const ProviderPatients = () => {
                                     <p className="flex items-center gap-2 justify-center"><FaIdCard className="text-cyan-500" /> {patient.identity_number}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaPhone className="text-cyan-500" /> {patient.added_by.phoneNumber}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaMapMarkerAlt className="text-cyan-500" /> {patient.address}</p>
-                                    <button onClick={() => handleEdit(patient)} className="text-cyan-500 hover:text-cyan-700">
+                                    {/* تعطيل زر التعديل إذا كان الدواء في حالة "معلق للحذف" */}
+                                    <button
+                                        onClick={() => handleEdit(patient)}
+                                        className={`flex items-center gap-2 justify-center ${patient.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-500 hover:text-cyan-700'}`}
+                                        disabled={patient.delete_status === 1}
+                                    >
                                         <FaEdit />
                                     </button>
-                                    <button onClick={() => handleDelete(patient.id)} className="text-red-500 hover:text-red-700">
+
+                                    <button
+                                        onClick={() => handleDelete(patient.id)}
+                                        className={`flex items-center gap-2 justify-center ${patient.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-700'}`}
+                                        disabled={patient.delete_status === 1}
+                                    >
                                         <FaTrash />
                                     </button>
                                 </div>

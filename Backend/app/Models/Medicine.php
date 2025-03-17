@@ -18,7 +18,7 @@ class Medicine extends Model
         'next_distribution_date',
         'type', // إضافة العمود type
         'add_by',
-        'delete_request_pending'
+        'delete_status', // إضافة العمود الجديد
     ];
 
     public function addedBy()

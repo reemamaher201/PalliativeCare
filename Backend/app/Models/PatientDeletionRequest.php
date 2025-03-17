@@ -5,27 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MedicineDeletionRequest extends Model
+class PatientDeletionRequest extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'medicine_id',
+        'patient_id',
         'provider_id',
         'status',
     ];
 
     // العلاقة مع جدول الأدوية
-    public function medicine()
+    public function patients()
     {
-        return $this->belongsTo(Medicine::class, 'medicine_id');
+        return $this->belongsTo(Medicine::class, 'patient_id');
     }
-
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
     // العلاقة مع جدول المستخدمين (المزود)
     public function provider()
     {
         return $this->belongsTo(User::class, 'provider_id');
     }
-
 
 }

@@ -13,11 +13,13 @@ const PatientRequests = () => {
     const [approvingId, setApprovingId] = useState(null);
     const [rejectingId, setRejectingId] = useState(null);
     const [deletionRequests, setDeletionRequests] = useState([]);
+    const [deletionRequestsp, setDeletionRequestsp] = useState([]);
+
 
     const fetchRequests = async () => {
         try {
             const token = localStorage.getItem('token');
-            const [patientResponse, medResponse, deletionResponse] = await Promise.all([
+            const [patientResponse, medResponse, deletionResponse,deletionResponsep] = await Promise.all([
                 axios.get('http://127.0.0.1:8000/api/patients/pending', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
@@ -27,10 +29,15 @@ const PatientRequests = () => {
                 axios.get('http://127.0.0.1:8000/api/deletion-requests', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
+                axios.get('http://127.0.0.1:8000/api/deletion-requestsp', {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
             ]);
             setRequests(patientResponse.data);
             setMedRequests(medResponse.data);
             setDeletionRequests(deletionResponse.data);
+            setDeletionRequestsp(deletionResponsep.data);
+
         } catch (error) {
             console.error('Error fetching requests:', error);
             setError('حدث خطأ أثناء جلب الطلبات.');
@@ -64,6 +71,7 @@ const PatientRequests = () => {
             setApprovingId(null);
         }
     };
+
 
     const handleReject = async (id, type) => {
         setRejectingId(id);
@@ -113,6 +121,35 @@ const PatientRequests = () => {
             setRejectingId(null);
         }
     };
+    const handleApproveDeletionp = async (id) => {
+        setApprovingId(id);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`http://127.0.0.1:8000/api/deletion-requestsp/${id}/approve`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setDeletionRequestsp(deletionRequestsp.filter(request => request.id !== id));
+        } catch (error) {
+            console.error('Error approving deletion request:', error);
+        } finally {
+            setApprovingId(null);
+        }
+    };
+
+    const handleRejectDeletionp = async (id) => {
+        setRejectingId(id);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`http://127.0.0.1:8000/api/deletion-requestsp/${id}/reject`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setDeletionRequestsp(deletionRequestsp.filter(request => request.id !== id));
+        } catch (error) {
+            console.error('Error rejecting deletion request:', error);
+        } finally {
+            setRejectingId(null);
+        }
+    };
 
     if (loading) {
         return (
@@ -147,7 +184,17 @@ const PatientRequests = () => {
                                 طلبات الأدوية
                             </Tab>
                             <Tab className="px-4 py-2 cursor-pointer text-gray-500 hover:text-cyan-700 focus:ring-2 focus:ring-cyan-500" selectedClassName="text-cyan-700 border-b-2 border-cyan-500">
-                                طلبات الحذف
+                            طلبات تعديل دواء
+                        </Tab>
+                            <Tab className="px-4 py-2 cursor-pointer text-gray-500 hover:text-cyan-700 focus:ring-2 focus:ring-cyan-500" selectedClassName="text-cyan-700 border-b-2 border-cyan-500">
+                                طلبات حذف دواء
+                            </Tab>
+
+                            <Tab className="px-4 py-2 cursor-pointer text-gray-500 hover:text-cyan-700 focus:ring-2 focus:ring-cyan-500" selectedClassName="text-cyan-700 border-b-2 border-cyan-500">
+                                طلبات تعديل مريض
+                            </Tab>
+                            <Tab className="px-4 py-2 cursor-pointer text-gray-500 hover:text-cyan-700 focus:ring-2 focus:ring-cyan-500" selectedClassName="text-cyan-700 border-b-2 border-cyan-500">
+                                طلبات حذف مريض
                             </Tab>
                         </TabList>
 
@@ -204,6 +251,10 @@ const PatientRequests = () => {
                             </ul>
                         </TabPanel>
                         <TabPanel>
+                            <h3 className="text-xl font-semibold mb-4 text-cyan-700">طلبات تعديل الأدوية</h3>
+
+                        </TabPanel>
+                        <TabPanel>
                             <h3 className="text-xl font-semibold mb-4 text-cyan-700">طلبات حذف الأدوية</h3>
                             <ul className="space-y-4">
                                 {deletionRequests.map((deletionRequest) => (
@@ -227,6 +278,41 @@ const PatientRequests = () => {
                                                     disabled={rejectingId === deletionRequest.id}
                                                 >
                                                     {rejectingId === deletionRequest.id ? 'جاري الرفض...' : 'رفض'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </TabPanel>
+                        <TabPanel>
+                            <h3 className="text-xl font-semibold mb-4 text-cyan-700">طلبات تعديل المرضى</h3>
+
+                        </TabPanel>
+                        <TabPanel>
+                            <h3 className="text-xl font-semibold mb-4 text-cyan-700">طلبات حذف المرضى</h3>
+                            <ul className="space-y-4">
+                                {deletionRequestsp.map((deletionRequestp) => (
+                                    <li key={deletionRequestp.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-lg font-semibold text-gray-800">{deletionRequestp.patient.name}</p>
+                                                <p className="text-sm text-gray-500">طلب من: {deletionRequestp.provider.name}</p>
+                                            </div>
+                                            <div className="space-x-2">
+                                                <button
+                                                    onClick={() => handleApproveDeletionp(deletionRequestp.id)}
+                                                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                                                    disabled={approvingId === deletionRequestp.id}
+                                                >
+                                                    {approvingId === deletionRequestp.id ? 'جاري الموافقة...' : 'موافقة'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRejectDeletionp(deletionRequestp.id)}
+                                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                                                    disabled={rejectingId === deletionRequestp.id}
+                                                >
+                                                    {rejectingId === deletionRequestp.id ? 'جاري الرفض...' : 'رفض'}
                                                 </button>
                                             </div>
                                         </div>
