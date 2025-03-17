@@ -18,7 +18,8 @@ return response()->json($settings);
 public function store(Request $request)
 {
 $request->validate([
-'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // تحقق من أن الملف صورة
+'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+'imgabout' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 'main_heading' => 'nullable|string',
 'main_text' => 'nullable|string',
 'footer_text' => 'nullable|string',
@@ -30,8 +31,13 @@ $settings = Setting::firstOrNew();
 
 // حفظ الصورة في المجلد العام (public)
 if ($request->hasFile('logo')) {
-$logoPath = $request->file('logo')->store('images', 'public');
+$logoPath = $request->file('logo')->store('public/images');
 $settings->logo = Storage::url($logoPath); // حفظ رابط الصورة
+}
+
+if ($request->hasFile('imgabout')) {
+$imgaboutPath = $request->file('imgabout')->store('public/images');
+$settings->imgabout = Storage::url($imgaboutPath); // حفظ رابط الصورة
 }
 
 $settings->main_heading = $request->main_heading;

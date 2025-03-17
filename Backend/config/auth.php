@@ -40,6 +40,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'api' => [
+            'driver' => 'jwt', // أو 'token' أو أي driver تستخدمه للمصادقة API
+            'provider' => 'users',
+            'hash' => false,
+        ],
     ],
 
     /*

@@ -10,15 +10,18 @@ import Footer from "./Footer";
 function LandingPage() {
     const [settings, setSettings] = useState({
         logo: "",
+        imgabout: "",
         main_heading: "",
         main_text: "",
         footer_text: "",
         background_color: "",
         button_color: "#4CAF50", // لون الزر الافتراضي
+
     });
 
     const [sections, setSections] = useState([]); // حالة لتخزين الأقسام
 
+    const [services, setServices] = useState({ title: '', content: '', image: '' });
     // جلب الإعدادات
     useEffect(() => {
         axios.get("http://localhost:8000/api/settings")
@@ -27,6 +30,15 @@ function LandingPage() {
             })
             .catch((error) => {
                 console.error("Error fetching settings:", error);
+            });
+    }, []);
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/services")
+            .then((response) => {
+                setServices(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching service:", error);
             });
     }, []);
 
@@ -44,9 +56,9 @@ function LandingPage() {
     return (
         <div className="font-sans">
             <Navbar logo={settings.logo} background_color={settings.background_color} />
-            <AboutSection logo={settings.logo} main_heading={settings.main_heading} main_text={settings.main_text} />
+            <AboutSection imgabout={settings.imgabout} main_heading={settings.main_heading} main_text={settings.main_text} />
             <FeaturesSection features={[]} />
-            <ServicesSection services={[]} />
+            <ServicesSection title={services.title} content={services.content} image={services.image} />
             <BlogSection blogs={[]} />
 
             <section className="py-12 px-8" dir="rtl">

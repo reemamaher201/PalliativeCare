@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Medicine;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -59,7 +60,7 @@ class MedicineController extends Controller
             $user = JWTAuth::parseToken()->authenticate();
 
             // التحقق من نوع المستخدم (user_type)
-            if ($user->user_type !== 0 && $user->user_type !== 1) {
+            if ($user->user_type !== User::USER_TYPE_MINISTRY && $user->user_type !== User::USER_TYPE_PROVIDER) {
                 return response()->json(['message' => 'ليس لديك صلاحية عرض الأدوية.'], 403);
             }
 
@@ -69,6 +70,54 @@ class MedicineController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['message' => 'حدث خطأ أثناء جلب الأدوية: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function destroyMedicine($id)
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['message' => 'غير مصرح لك بحذف الدواء'], 403);
+            }
+
+            $medicine = Medicine::find($id);
+
+            if (!$medicine) {
+                return response()->json(['message' => 'لم يتم العثور على الدواء'], 404);
+            }
+
+            $medicine->delete();
+
+            return response()->json(['message' => 'تم حذف الدواء بنجاح']);
+        } catch (\Exception $e) {
+            Log::error("Error deleting medicine: " . $e->getMessage());
+            return response()->json(['message' => 'حدث خطأ أثناء حذف الدواء: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateMedicine(Request $request, $id)
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
+                return response()->json(['message' => 'غير مصرح لك بتعديل الدواء'], 403);
+            }
+
+            $medicine = Medicine::find($id);
+
+            if (!$medicine) {
+                return response()->json(['message' => 'لم يتم العثور على الدواء'], 404);
+            }
+
+            $medicine->update($request->all());
+
+            return response()->json(['message' => 'تم تحديث الدواء بنجاح', 'medicine' => $medicine]);
+        } catch (\Exception $e) {
+            Log::error("Error updating medicine: " . $e->getMessage());
+            return response()->json(['message' => 'حدث خطأ أثناء تعديل الدواء: ' . $e->getMessage()], 500);
         }
     }
 }

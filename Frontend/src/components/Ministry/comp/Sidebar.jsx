@@ -12,6 +12,8 @@ const Sidebar = () => {
                 <li className="hover:underline cursor-pointer">إحصائيات</li>
                 <li className="hover:underline cursor-pointer"><Link to="/showprovider">مزود الخدمة</Link></li>
                 <li className="hover:underline cursor-pointer"><Link to="/showotification">الإشعارات</Link></li>
+                <li className="hover:underline cursor-pointer"><Link to="/showrequests">الطلبات</Link></li>
+
             </ul>
         </aside>
     );

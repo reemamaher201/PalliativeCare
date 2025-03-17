@@ -16,5 +16,13 @@ class Medicine extends Model
         'required_quantity',
         'locations',
         'next_distribution_date',
+        'type', // إضافة العمود type
+        'add_by',
+        'delete_request_pending'
     ];
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'add_by');
+    }
 }

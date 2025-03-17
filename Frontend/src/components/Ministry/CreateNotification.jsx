@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Sidebar from "./comp/Sidebar.jsx";
+import Header from "./comp/Header.jsx";
 
 const CreateNotification = () => {
     const [title, setTitle] = useState("");
@@ -38,16 +40,16 @@ const CreateNotification = () => {
 
     return (
         <div dir={"rtl"} className="flex min-h-screen bg-gray-100">
-            {/* Sidebar */}
-            {/* (كما هو في الكود السابق) */}
-            <main className="flex-1 p-6">
+           <Sidebar/>
+
+            <main className="flex-1 ">
                 {/* Header */}
-                {/* (كما هو في الكود السابق) */}
+                <Header/>
 
                 {/* Notification Creation Form */}
                 <section>
-                    <h3 className="text-lg font-bold text-cyan-700 mb-6">إنشاء إشعار</h3>
-                    <form className="space-y-4" onSubmit={handleSubmit}>
+                    <h3 className="text-lg font-bold text-cyan-700 mb-6 pt-2">إنشاء إشعار</h3>
+                    <form className="space-y-4 p-8" onSubmit={handleSubmit}>
                         <div>
                             <input
                                 type="text"
@@ -82,9 +84,9 @@ const CreateNotification = () => {
                                 onChange={(e) => setRecipient(e.target.value)}
                             >
                                 <option value="">المرسل له</option>
-                                <option value="all">الجميع</option>
-                                <option value="patients">المرضى</option>
-                                <option value="providers">مزودو الخدمة</option>
+                                <option value="الجميع">الجميع</option>
+                                <option value="المرضى">المرضى</option>
+                                <option value="مزودو الخدمة">مزودو الخدمة</option>
                             </select>
                         </div>
                         <div>

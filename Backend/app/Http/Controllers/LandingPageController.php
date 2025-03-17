@@ -22,7 +22,7 @@ class LandingPageController extends Controller
 
     public function uploadImage(Request $request)
     {
-        $path = $request->file('image')->store('uploads', 'public');
+        $path = $request->file('image')->store('public/images');
         return response()->json(['imageUrl' => asset("storage/{$path}")]);
     }
 }

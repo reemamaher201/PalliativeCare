@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import Header from "./comp/Header.jsx";
 import Sidebar from "./comp/Sidebar.jsx";
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // استيراد useNavigate
+import { useNavigate } from 'react-router-dom';
+import ChatButton from "../Utilties/ChatButton.jsx"; // استيراد useNavigate
 
 const AddMedicine = () => {
     const [formData, setFormData] = useState({
@@ -146,6 +147,7 @@ const AddMedicine = () => {
                     </form>
                 </section>
                 </main>
+
 </div>
 );
 };

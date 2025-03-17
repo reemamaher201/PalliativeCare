@@ -1,6 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const ServicesSection = ({ services }) => {
+const ServicesSection = () => {
+    const [services, setServices] = useState([]);
+
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/services")
+            .then((response) => {
+                setServices(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching services:", error);
+            });
+    }, []);
+
     return (
         <section className="py-12 px-8" dir="rtl">
             <div className="container mx-auto text-center">

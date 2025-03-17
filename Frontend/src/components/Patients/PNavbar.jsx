@@ -1,8 +1,8 @@
 import React from "react";
 
-const Navbar = () => {
+const Navbar = ({ onLogout }) => {
     return (
-        <nav dir={"rtl"} className=" rounded-b-xl text-white py-3 px-8" style={{backgroundColor: "#73B0C5"}}>
+        <nav dir={"rtl"} className="rounded-b-xl text-white py-3 px-8" style={{ backgroundColor: "#73B0C5" }}>
             <div className="container mx-auto flex justify-between items-center">
                 {/* الروابط */}
                 <ul className="flex space-x-6">
@@ -36,9 +36,9 @@ const Navbar = () => {
                     <a href="#" className="text-lg">
                         <i className="fas fa-bell"></i>
                     </a>
-                    <a href="#" className="text-lg">
+                    <button onClick={onLogout} className="text-lg">
                         <i className="fas fa-sign-out-alt"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
         </nav>

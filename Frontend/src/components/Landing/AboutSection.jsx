@@ -1,12 +1,12 @@
 import React from "react";
 
-const AboutSection = ({ logo, main_heading, main_text }) => {
+const AboutSection = ({imgabout, main_heading, main_text }) => {
     return (
         <section className="py-16 px-8">
             <div className="shadow rounded-lg container mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-4">
                 <div className="w-full md:w-1/2 flex justify-center">
                     <img
-                        src={logo}
+                        src={`http://localhost:8000${imgabout}`}
                         alt="عن الموقع"
                         className="rounded-lg shadow-md"
                     />

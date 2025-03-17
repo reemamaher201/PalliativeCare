@@ -11,6 +11,7 @@ class Setting extends Model
 
     protected $fillable = [
         'logo',
+        'imgabout',
         'main_heading',
         'main_text',
         'footer_text',

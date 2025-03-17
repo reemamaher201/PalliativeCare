@@ -1,115 +1,90 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FaPaperPlane } from "react-icons/fa";
 import PNavbar from "./PNavbar.jsx";
 
 const ChatPage = () => {
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState("");
+    const [receiverId, setReceiverId] = useState(null);
+    const token = localStorage.getItem("token");
+
+    useEffect(() => {
+        if (receiverId) {
+            fetchMessages();
+            const interval = setInterval(fetchMessages, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [receiverId]);
+
+    const fetchMessages = async () => {
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/api/chat/messages/${receiverId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setMessages(response.data.messages);
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        }
+    };
+
+    const sendMessage = async () => {
+        if (!newMessage.trim()) return;
+
+        try {
+            await axios.post(
+                "http://127.0.0.1:8000/api/chat/send",
+                { receiver_id: receiverId, message: newMessage },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setNewMessage("");
+            fetchMessages();
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    };
+
     return (
         <div dir="rtl" className="min-h-screen flex flex-col">
-            {/* شريط التنقل */}
-            <div className="font-sans">
-                <PNavbar />
-            </div>
+            <PNavbar />
             <div className="container mx-auto bg-white shadow-lg rounded-lg flex flex-grow">
                 {/* قائمة الدردشات */}
                 <div className="w-1/3 border-r border-gray-300 p-4 flex flex-col">
                     <h3 className="text-lg font-bold text-gray-700 mb-4">الدردشات</h3>
-                    {/* البحث */}
-                    <div className="relative mb-4">
-                        <input
-                            type="text"
-                            placeholder="بحث"
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        />
-                        <span className="absolute top-2 left-3 text-gray-400">
-                            <i className="fas fa-search"></i>
-                        </span>
-                    </div>
-                    {/* قائمة المحادثات */}
-                    <ul className="space-y-4 overflow-y-auto flex-grow">
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                            </p>
+                    {/* قائمة المستخدمين */}
+                    <ul className="space-y-4">
+                        <li onClick={() => setReceiverId(1)} className="cursor-pointer border-b pb-2">
+                            <h4 className="font-bold text-gray-700">وزارة الصحة</h4>
                         </li>
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                            </p>
+                        <li onClick={() => setReceiverId(2)} className="cursor-pointer border-b pb-2">
+                            <h4 className="font-bold text-gray-700">مزود الخدمات</h4>
                         </li>
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                            </p>
-                        </li>
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                            </p>
-                        </li>
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                             </p>
-                        </li>
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                            </p>
-                        </li>
-                        <li className="border-b pb-2">
-                            <h4 className="font-bold text-gray-700">جمعية الإغاثة الإسلامية</h4>
-                            <p className="text-sm text-gray-500">
-                                أنت: الدحية ستتوفر بعد أسبوع من الآن ونبقى على تواصل.
-                            </p>
-                        </li>
-                       
-                        {/* يمكن إضافة المزيد من المحادثات هنا */}
                     </ul>
                 </div>
 
                 {/* نافذة المحادثة */}
                 <div className="w-2/3 p-4 flex flex-col">
-                    {/* عنوان المحادثة */}
                     <div className="border-b pb-4 mb-4">
-                        <h3 className="text-lg font-bold text-gray-700">
-                            جمعية الصليب الأحمر الفلسطيني
-                        </h3>
+                        <h3 className="text-lg font-bold text-gray-700">المحادثة</h3>
                     </div>
-                    {/* الرسائل */}
                     <div className="flex flex-col space-y-4 mb-4 overflow-y-auto flex-grow">
-                        <div className="self-start bg-gray-200 px-4 py-2 rounded-lg max-w-sm">
-                            أهلاً، كيف يمكننا مساعدتك؟
-                        </div>
-                        <div className="self-end bg-cyan-500 text-white px-4 py-2 rounded-lg max-w-sm">
-                            أحتاج إلى مساعدة بخصوص الدواء.
-                        </div>
-                        <div className="self-start bg-gray-200 px-4 py-2 rounded-lg max-w-sm">
-                            بالتأكيد، سنقوم بمساعدتك.
-                        </div>
-                        <div className="self-end bg-cyan-500 text-white px-4 py-2 rounded-lg max-w-sm">
-                            أحتاج إلى مساعدة بخصوص الدواء.
-                        </div>
-                        <div className="self-start bg-gray-200 px-4 py-2 rounded-lg max-w-sm">
-                            بالتأكيد، سنقوم بمساعدتك.
-                        </div>
-                        <div className="self-end bg-cyan-500 text-white px-4 py-2 rounded-lg max-w-sm">
-                            أحتاج إلى مساعدة بخصوص الدواء.
-                        </div>
+                        {messages.map((msg, index) => (
+                            <div key={index} className={`max-w-sm px-4 py-2 rounded-lg ${msg.sender_id === receiverId ? "self-start bg-gray-200" : "self-end bg-cyan-500 text-white"}`}>
+                                {msg.message}
+                            </div>
+                        ))}
                     </div>
-                    {/* حقل إدخال الرسائل */}
                     <div className="flex items-center">
                         <input
                             type="text"
                             placeholder="اكتب رسالتك هنا..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         />
-                        <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-cyan-600 transition">
-                            مراسلة
+                        <button onClick={sendMessage} className="bg-cyan-500 text-white px-4 py-2 rounded-lg ml-2 hover:bg-cyan-600 transition">
+                            <FaPaperPlane />
                         </button>
                     </div>
                 </div>

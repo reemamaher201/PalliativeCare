@@ -133,6 +133,9 @@
       <path value="$PROJECT_DIR$/Backend/vendor/psr/http-client" />
       <path value="$PROJECT_DIR$/Backend/vendor/psr/http-factory" />
       <path value="$PROJECT_DIR$/Backend/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/Backend/vendor/predis/predis" />
+      <path value="$PROJECT_DIR$/Backend/vendor/pusher/pusher-php-server" />
+      <path value="$PROJECT_DIR$/Backend/vendor/paragonie/sodium_compat" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />

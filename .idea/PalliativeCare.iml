@@ -124,6 +124,9 @@
       <excludeFolder url="file://$MODULE_DIR$/Backend/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/Backend/vendor/voku/portable-ascii" />
       <excludeFolder url="file://$MODULE_DIR$/Backend/vendor/webmozart/assert" />
+      <excludeFolder url="file://$MODULE_DIR$/Backend/vendor/predis/predis" />
+      <excludeFolder url="file://$MODULE_DIR$/Backend/vendor/paragonie/sodium_compat" />
+      <excludeFolder url="file://$MODULE_DIR$/Backend/vendor/pusher/pusher-php-server" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

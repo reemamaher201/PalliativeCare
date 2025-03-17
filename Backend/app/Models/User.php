@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,44 +9,32 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // تعريف ثوابت لأنواع المستخدمين
+    const USER_TYPE_MINISTRY = 0;
+    const USER_TYPE_PROVIDER = 1;
+    const USER_TYPE_PATIENT = 2;
+    const USER_TYPE_ADMIN = 3;
+
     protected $fillable = [
         'name',
         'phoneNumber',
         'identity_number',
         'password',
-        'user_type', // إضافة user_type إلى القائمة
+        'address',
+        'user_type',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'phoneNumber_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'phoneNumber_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
     public function getJWTIdentifier()
     {
@@ -56,15 +43,28 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'user_type' => $this->user_type,
+        ];
     }
 
     public function provider()
     {
         return $this->hasOne(Provider::class, 'user_id', 'id');
     }
+
     public function patient()
     {
         return $this->hasOne(Patient::class, 'identity_number', 'identity_number');
     }
+    public function addedPatients()
+    {
+        return $this->hasMany(Patient::class, 'add_by');
+    }
+
+    public function medrequests()
+    {
+        return $this->hasMany(PatientRequest::class, 'provider_id');
+    }
+
 }
