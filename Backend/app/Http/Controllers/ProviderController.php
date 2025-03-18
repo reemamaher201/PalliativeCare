@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Medicine;
 use App\Models\MedicineDeletionRequest;
+use App\Models\MedicineEditRequest;
 use App\Models\MedRequest;
 use App\Models\Patient;
 use App\Models\PatientDeletionRequest;
@@ -682,22 +683,24 @@ class ProviderController extends Controller
             $patient = $deletionRequest->patient;
 
             if ($patient) {
-                // حذف المريض من جدول المرضى
-                $patient->delete();
+                // البحث عن المستخدم المرتبط بالمريض باستخدام identity_number
+                $user = User::where('identity_number', $patient->identity_number)->first();
 
-                // حذف المستخدم المرتبط بالمريض (إذا كان موجودًا)
-                $user = User::find($patient->identity_number);
                 if ($user) {
+                    // حذف المستخدم أولاً
                     $user->delete();
                 }
+
+                // حذف المريض من جدول المرضى
+                $patient->delete();
             }
 
             DB::commit();
-            return response()->json(['message' => 'تمت الموافقة على طلب الحذف وحذف المريض بنجاح']);
+            return response()->json(['message' => 'تمت الموافقة على طلب الحذف وحذف المريض والمستخدم بنجاح']);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error approving deletion request: ' . $e->getMessage());
-            return response()->json(['error' => 'حدث خطأ أثناء الموافقة على طلب الحذف'], 500);
+            return response()->json(['error' => 'حدث خطأ أثناء الموافقة على طلب الحذف: ' . $e->getMessage()], 500);
         }
     }
 
@@ -734,6 +737,147 @@ class ProviderController extends Controller
         } catch (\Exception $e) {
             Log::error('Error rejecting deletion request: ' . $e->getMessage());
             return response()->json(['error' => 'حدث خطأ أثناء رفض طلب الحذف'], 500);
+        }
+    }
+
+    public function requestEditMedicine(Request $request, $id)
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم مزود
+            if ($authUser->user_type !== User::USER_TYPE_PROVIDER) {
+                return response()->json(['error' => 'غير مصرح لك بإرسال طلبات التعديل'], 403);
+            }
+
+            // البحث عن الدواء
+            $medicine = Medicine::find($id);
+
+            if (!$medicine) {
+                return response()->json(['error' => 'الدواء غير موجود'], 404);
+            }
+
+            // تحديث حالة التعديل في جدول الأدوية
+            $medicine->update(['edit_status' => 1]); // 1: طلب تعديل معلق
+
+            // إنشاء طلب تعديل
+            MedicineEditRequest::create([
+                'medicine_id' => $medicine->id,
+                'provider_id' => $authUser->id,
+                'updated_data' => json_encode($request->all()), // البيانات الجديدة
+                'status' => 'pending', // حالة الطلب: pending
+            ]);
+
+            return response()->json(['message' => 'تم إرسال طلب التعديل بنجاح. انتظر موافقة الوزارة.'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error requesting medicine edit: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ أثناء إرسال طلب التعديل'], 500);
+        }
+    }
+
+    // جلب جميع طلبات تعديل الأدوية
+    public function index()
+    {
+        $requests = MedicineEditRequest::with(['medicine', 'provider'])->get();
+
+        $requests = $requests->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'medicine_id' => $request->medicine_id,
+                'provider_id' => $request->provider_id,
+                'updated_data' => json_decode($request->updated_data, true), // البيانات الجديدة
+                'status' => $request->status,
+                'created_at' => $request->created_at,
+                'updated_at' => $request->updated_at,
+                'medicine' => $request->medicine, // البيانات القديمة
+                'provider' => $request->provider,
+            ];
+        });
+
+        return response()->json($requests);
+    }
+
+    // الموافقة على طلب التعديل
+    public function approve($id)
+    {
+        $editRequest = MedicineEditRequest::findOrFail($id);
+
+        if ($editRequest->status !== 'pending') {
+            return response()->json(['message' => 'لا يمكن الموافقة على طلب غير معلق'], 400);
+        }
+
+        // تحويل updated_data من JSON إلى مصفوفة
+        $updatedData = json_decode($editRequest->updated_data, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return response()->json(['message' => 'بيانات التعديل غير صالحة'], 400);
+        }
+
+        // تطبيق التعديلات على الدواء
+        $medicine = $editRequest->medicine;
+        $medicine->update($updatedData);
+
+        // تحديث حالة التعديل في جدول الأدوية
+        $medicine->update(['edit_status' => 0]); // 0: لا يوجد طلب تعديل
+
+        // حذف الطلب من جدول طلبات التعديل
+        $editRequest->delete();
+
+        return response()->json(['message' => 'تمت الموافقة على طلب التعديل بنجاح']);
+    }
+
+    // رفض طلب التعديل
+    public function reject($id)
+    {
+        $editRequest = MedicineEditRequest::findOrFail($id);
+
+        if ($editRequest->status !== 'pending') {
+            return response()->json(['message' => 'لا يمكن رفض طلب غير معلق'], 400);
+        }
+
+        // تحديث حالة التعديل في جدول الأدوية
+        $medicine = $editRequest->medicine;
+        $medicine->update(['edit_status' => 2]); // 2: طلب تعديل مرفوض
+
+        $editRequest->status = 'rejected';
+        $editRequest->save();
+
+        return response()->json(['message' => 'تم رفض طلب التعديل بنجاح']);
+    }
+
+
+    public function requestEditPatient(Request $request, $id)
+    {
+        try {
+            $authUser = JWTAuth::parseToken()->authenticate();
+
+            // التحقق من أن المستخدم مزود
+            if ($authUser->user_type !== User::USER_TYPE_PROVIDER) {
+                return response()->json(['error' => 'غير مصرح لك بإرسال طلبات التعديل'], 403);
+            }
+
+            // البحث عن الدواء
+            $patient = Patient::find($id);
+
+            if (!$patient) {
+                return response()->json(['error' => 'الدواء غير موجود'], 404);
+            }
+
+            // تحديث حالة التعديل في جدول الأدوية
+            $patient->update(['edit_status' => 1]); // 1: طلب تعديل معلق
+
+            // إنشاء طلب تعديل
+            MedicineEditRequest::create([
+                'medicine_id' => $patient->id,
+                'provider_id' => $authUser->id,
+                'updated_data' => json_encode($request->all()), // البيانات الجديدة
+                'status' => 'pending', // حالة الطلب: pending
+            ]);
+
+            return response()->json(['message' => 'تم إرسال طلب التعديل بنجاح. انتظر موافقة الوزارة.'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error requesting medicine edit: ' . $e->getMessage());
+            return response()->json(['error' => 'حدث خطأ أثناء إرسال طلب التعديل'], 500);
         }
     }
 }

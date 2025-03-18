@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Sidebar from './component/Sidebar'; // استيراد السايدبار
-import Navbar from './component/Navbar'; // استيراد الناف بار
+import Navbar from './component/Navbar';
+import {useNavigate} from "react-router-dom"; // استيراد الناف بار
 
 const ReqAddPatient = () => {
     const [patientData, setPatientData] = useState({
@@ -17,6 +18,7 @@ const ReqAddPatient = () => {
     const [loading, setLoading] = useState(false); // حالة التحميل
     const [error, setError] = useState(""); // حالة الخطأ العام
     const [identityError, setIdentityError] = useState(""); // حالة الخطأ لرقم الهوية
+    const navigate = useNavigate(); // تهيئة useNavigate
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -75,6 +77,8 @@ const ReqAddPatient = () => {
                 },
             });
             alert(response.data.message);
+            navigate('/provider/patients'); // إعادة التوجيه إلى صفحة المرضى
+
         } catch (error) {
             console.error('Error adding patient:', error);
             setError('حدث خطأ أثناء إضافة المريض.');

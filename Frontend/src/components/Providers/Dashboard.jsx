@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./component/Sidebar.jsx";
 import Navbar from "./component/Navbar.jsx";
 import ChatButton from "../Utilties/ChatButton.jsx";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faPhone, faUser } from '@fortawesome/free-solid-svg-icons';
 
 const DashboardS = () => {
     const [providerData, setProviderData] = useState(null);
@@ -70,16 +72,28 @@ const DashboardS = () => {
             <main className="flex-1">
                 <Navbar />
                 <section className="bg-white p-6 rounded-lg shadow-lg">
-                    <h2 className="text-2xl font-bold text-cyan-700 mb-4">مرحباً، {providerData.name}!</h2>
-                    <div className="space-y-2">
-                        <p><strong>البريد الإلكتروني:</strong> {providerData.email}</p>
-                        <p><strong>رقم الهاتف:</strong> {providerData.phoneNumber}</p>
+                    <h2 className="text-3xl font-bold text-cyan-700 mb-6 flex items-center">
+                        <FontAwesomeIcon icon={faUser} className="mr-2" />
+                        مرحباً، {providerData.name}!
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2 flex items-center">
+                                <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                                البريد الإلكتروني
+                            </h3>
+                            <p className="text-gray-600">{providerData.email}</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2 flex items-center">
+                                <FontAwesomeIcon icon={faPhone} className="mr-2" />
+                                رقم الهاتف
+                            </h3>
+                            <p className="text-gray-600">{providerData.phoneNumber}</p>
+                        </div>
                     </div>
-
-
                 </section>
             </main>
-            {/* زر الشات العائم */}
             <ChatButton />
         </div>
     );

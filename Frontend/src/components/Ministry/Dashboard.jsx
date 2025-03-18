@@ -5,6 +5,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 import Sidebar from "./comp/Sidebar.jsx";
 import errorGif from "../../assets/Mobile login.gif";
 import { useNavigate } from 'react-router-dom';
+import {logout} from "../../services/Auth/auth.jsx";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -138,6 +139,14 @@ const DashboardM = () => {
                         <i className="fas fa-envelope text-gray-500 text-lg cursor-pointer"></i>
                     </div>
                 </header>
+
+
+
+                <button onClick={logout}>
+                تسجيل الخروج
+            </button>
+
+
 
                 <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="bg-white shadow-lg rounded-lg p-6">

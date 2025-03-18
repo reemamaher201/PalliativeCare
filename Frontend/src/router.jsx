@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./components/Landing/LandingPage.jsx";
-import Login from "./components/Auth/Login.jsx";
-import Register from "./components/Auth/Register.jsx";
+import Login from "./services/Auth/Login.jsx";
+import Register from "./services/Auth/Register.jsx";
 import UserProfile from "./components/Patients/PProfile.jsx";
 import DashboardM from "./components/Ministry/Dashboard.jsx";
 import ShowProvider from "./components/Ministry/ShowProvider.jsx";

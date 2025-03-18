@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEdit, FaTrash } from "react-icons/fa";
+import { FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import Sidebar from "./component/Sidebar.jsx";
 import Navbar from "./component/Navbar.jsx";
 import ChatButton from "../Utilties/ChatButton.jsx";
 import EditPatientModal from "./EditPatientModal.jsx";
+import { Link } from "react-router-dom";
 
 const ProviderPatients = () => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [editPatient, setEditPatient] = useState(null);
+    const [editingPatients, setEditingPatients] = useState([]); // حالة لطلبات التعديل
+    const [deletingPatients, setDeletingPatients] = useState([]); // حالة لطلبات الحذف
+
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
 
     const fetchPatients = async () => {
         try {
@@ -37,10 +42,11 @@ const ProviderPatients = () => {
         }
     };
 
-
     const handleEdit = (patient) => {
-        setEditPatient(patient);
-        setIsEditModalOpen(true);
+        if (patient.edit_status === 0) {
+            setEditPatient(patient); // تعيين بيانات المريض
+            setIsEditModalOpen(true); // فتح المودال
+        }
     };
 
     const handleSave = async (updatedPatient) => {
@@ -51,14 +57,14 @@ const ProviderPatients = () => {
                 return;
             }
 
-            // إرسال طلب تعديل
+            // إضافة المريض إلى قائمة المرضى الذين يتم تعديلهم
+            setEditingPatients((prev) => [...prev, updatedPatient.id]);
+
+            // إرسال طلب التعديل إلى API
             const response = await axios.post(
-                "http://127.0.0.1:8000/api/patient-modification-requests",
-                {
-                    patient_id: updatedPatient.id,
-                    type: "update",
-                    data: JSON.stringify(updatedPatient), // إرسال البيانات الجديدة
-                },
+
+                `http://127.0.0.1:8000/api/medicines/${updatedPatient.id}/request-edit`,
+                updatedPatient,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -68,11 +74,26 @@ const ProviderPatients = () => {
 
             if (response.status === 201) {
                 alert("تم إرسال طلب التعديل بنجاح. انتظر الموافقة من الوزارة.");
-                setIsEditModalOpen(false);
+
+                // تحديث حالة المريض إلى "معلق للتعديل"
+                setPatients((prevPatients) =>
+                    prevPatients.map((patient) =>
+                        patient.id === updatedPatient.id ? { ...patient, edit_status: 1 } : patient
+                    )
+                );
+
+                // إزالة المريض من قائمة المرضى الذين يتم تعديلهم بعد التحديث
+                setTimeout(() => {
+                    fetchPatients();
+                    setEditingPatients((prev) => prev.filter((id) => id !== updatedPatient.id));
+                }, 2000);
             }
         } catch (err) {
             console.error("Error updating patient:", err);
             setError(err.response?.data?.message || "حدث خطأ أثناء تعديل المريض. يرجى المحاولة مرة أخرى.");
+
+            // إذا فشل الطلب، إزالة المريض من قائمة المرضى الذين يتم تعديلهم
+            setEditingPatients((prev) => prev.filter((id) => id !== updatedPatient.id));
         }
     };
 
@@ -84,14 +105,10 @@ const ProviderPatients = () => {
                 return;
             }
 
-            // تحديث حالة المريض إلى "طلب حذف معلق" محليًا
-            setPatients(prevPatients =>
-                prevPatients.map(patient =>
-                    patient.id === id ? { ...patient, delete_status: 1 } : patient
-                )
-            );
+            // إضافة المريض إلى قائمة المرضى الذين يتم حذفهم
+            setDeletingPatients((prev) => [...prev, id]);
 
-            // إرسال طلب الحذف
+            // إرسال طلب الحذف إلى API
             const response = await axios.post(
                 `http://127.0.0.1:8000/api/patients/${id}/request-delete`,
                 {},
@@ -104,18 +121,23 @@ const ProviderPatients = () => {
 
             if (response.status === 200) {
                 alert("تم إرسال طلب الحذف بنجاح. انتظر موافقة الوزارة.");
-                fetchPatients(); // إعادة جلب البيانات لتحديث القائمة من السيرفر
+
+                // تحديث حالة المريض إلى "طلب حذف معلق"
+                setPatients((prevPatients) =>
+                    prevPatients.map((patient) =>
+                        patient.id === id ? { ...patient, delete_status: 1 } : patient
+                    )
+                );
+
+                // إزالة المريض من قائمة المرضى الذين يتم حذفهم بعد التحديث
+                setDeletingPatients((prev) => prev.filter((patientId) => patientId !== id));
             }
         } catch (err) {
             console.error("Error requesting patient deletion:", err);
             setError(err.response?.data?.message || "حدث خطأ أثناء إرسال طلب الحذف. يرجى المحاولة مرة أخرى.");
 
-            // إذا تم رفض الطلب، قم بإعادة تمكين الأزرار
-            setPatients(prevPatients =>
-                prevPatients.map(patient =>
-                    patient.id === id ? { ...patient, delete_status: 2 } : patient
-                )
-            );
+            // إذا فشل الطلب، إزالة المريض من قائمة المرضى الذين يتم حذفهم
+            setDeletingPatients((prev) => prev.filter((patientId) => patientId !== id));
         }
     };
 
@@ -147,6 +169,14 @@ const ProviderPatients = () => {
             <Sidebar />
             <main className="flex-1">
                 <Navbar />
+                <div className="flex justify-end m-4">
+                    <Link to="/patients/request">
+                        <button className="bg-cyan-500 text-white py-2 px-4 rounded hover:bg-cyan-700 flex items-center">
+                            <FaPlus className="mr-2" />
+                            إضافة مريض
+                        </button>
+                    </Link>
+                </div>
                 <section className="p-6">
                     <h2 className="text-2xl font-bold text-cyan-700 mb-6 text-center">المرضى الذين تمت إضافتهم</h2>
 
@@ -167,21 +197,37 @@ const ProviderPatients = () => {
                                     <p className="flex items-center gap-2 justify-center"><FaIdCard className="text-cyan-500" /> {patient.identity_number}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaPhone className="text-cyan-500" /> {patient.added_by.phoneNumber}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaMapMarkerAlt className="text-cyan-500" /> {patient.address}</p>
-                                    {/* تعطيل زر التعديل إذا كان الدواء في حالة "معلق للحذف" */}
+
                                     <button
                                         onClick={() => handleEdit(patient)}
-                                        className={`flex items-center gap-2 justify-center ${patient.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-500 hover:text-cyan-700'}`}
-                                        disabled={patient.delete_status === 1}
+                                        className={`flex items-center gap-2 justify-center ${
+                                            patient.edit_status === 1 || patient.delete_status === 1 || editingPatients.includes(patient.id)
+                                                ? 'text-gray-400 cursor-not-allowed'
+                                                : 'text-cyan-500 hover:text-cyan-700'
+                                        }`}
+                                        disabled={patient.edit_status === 1 || patient.delete_status === 1 || editingPatients.includes(patient.id)}
                                     >
-                                        <FaEdit />
+                                        {editingPatients.includes(patient.id) || patient.edit_status === 1 ? (
+                                            <span className="animate-spin">⏳</span>
+                                        ) : (
+                                            <FaEdit />
+                                        )}
                                     </button>
 
                                     <button
                                         onClick={() => handleDelete(patient.id)}
-                                        className={`flex items-center gap-2 justify-center ${patient.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-700'}`}
-                                        disabled={patient.delete_status === 1}
+                                        className={`flex items-center gap-2 justify-center ${
+                                            patient.delete_status === 1 || patient.edit_status === 1 || deletingPatients.includes(patient.id)
+                                                ? 'text-gray-400 cursor-not-allowed'
+                                                : 'text-red-500 hover:text-red-700'
+                                        }`}
+                                        disabled={patient.delete_status === 1 || patient.edit_status === 1 || deletingPatients.includes(patient.id)}
                                     >
-                                        <FaTrash />
+                                        {deletingPatients.includes(patient.id) || patient.delete_status === 1 ? (
+                                            <span className="animate-spin">⏳</span>
+                                        ) : (
+                                            <FaTrash />
+                                        )}
                                     </button>
                                 </div>
                             ))
@@ -190,14 +236,15 @@ const ProviderPatients = () => {
                         )}
                     </div>
                 </section>
+                <EditPatientModal
+                    patient={editPatient} // تأكد من أن `editPatient` يحتوي على البيانات الصحيحة
+                    isOpen={isEditModalOpen} // تأكد من أن `isEditModalOpen` يتم تحديثه بشكل صحيح
+                    onRequestClose={() => setIsEditModalOpen(false)} // تأكد من إغلاق المودال
+                    onSave={handleSave} // تأكد من أن دالة الحفظ تعمل بشكل صحيح
+                />
             </main>
             <ChatButton />
-            <EditPatientModal
-                patient={editPatient}
-                isOpen={isEditModalOpen}
-                onRequestClose={() => setIsEditModalOpen(false)}
-                onSave={handleSave}
-            />
+
         </div>
     );
 };

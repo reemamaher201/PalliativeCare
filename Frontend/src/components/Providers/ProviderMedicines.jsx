@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaPills, FaTag, FaBarcode, FaEdit, FaTrash, FaAudioDescription, FaClipboard, FaTags } from "react-icons/fa";
+import { FaPills, FaTags, FaClipboard, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import Sidebar from "./component/Sidebar.jsx";
 import Navbar from "./component/Navbar.jsx";
 import ChatButton from "../Utilties/ChatButton.jsx";
-// import EditMedicineModal from "./EditMedicineModal.jsx";
+import EditMedicineModal from "./EditMedicineModal.jsx";
+import { Link } from "react-router-dom";
 
 const ProviderMedicines = () => {
     const [medicines, setMedicines] = useState([]);
@@ -12,7 +13,8 @@ const ProviderMedicines = () => {
     const [error, setError] = useState("");
     const [editMedicine, setEditMedicine] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
+    const [editingMedicines, setEditingMedicines] = useState([]);
+    const [deletingMedicines, setDeletingMedicines] = useState([]);
     const fetchMedicines = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -38,8 +40,10 @@ const ProviderMedicines = () => {
     };
 
     const handleEdit = (medicine) => {
-        setEditMedicine(medicine);
-        setIsEditModalOpen(true);
+        if (medicine.edit_status === 0) {
+            setEditMedicine(medicine);
+            setIsEditModalOpen(true);
+        }
     };
 
     const handleSave = async (updatedMedicine) => {
@@ -50,27 +54,47 @@ const ProviderMedicines = () => {
                 return;
             }
 
-            // إرسال طلب التعديل
-            const response = await axios.put(
-                `http://127.0.0.1:8000/api/med-requests/${updatedMedicine.id}`,
+            // إضافة الدواء إلى قائمة الأدوية التي يتم تعديلها
+            setEditingMedicines((prev) => [...prev, updatedMedicine.id]);
+
+            // إرسال طلب التعديل إلى API
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/medicines/${updatedMedicine.id}/request-edit`,
                 updatedMedicine,
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
 
             if (response.status === 200) {
-                alert("تم تحديث الدواء بنجاح!");
-                setIsEditModalOpen(false);
-                fetchMedicines(); // إعادة جلب البيانات لتحديث القائمة
+                alert("تم إرسال طلب التعديل بنجاح. انتظر موافقة الوزارة.");
+
+                // تحديث حالة الدواء إلى "معلق للتعديل"
+                setMedicines((prevMedicines) =>
+                    prevMedicines.map((medicine) =>
+                        medicine.id === updatedMedicine.id ? { ...medicine, edit_status: 1 } : medicine
+                    )
+                );
+
+                // انتظار ثانيتين قبل تحديث البيانات لضمان بقاء رمز التحميل ظاهرًا
+                setTimeout(() => {
+                    fetchMedicines();
+                    setEditingMedicines((prev) => prev.filter((id) => id !== updatedMedicine.id)); // إزالة الدواء من قائمة الأدوية بعد التحديث
+                }, 2000);
             }
         } catch (err) {
-            console.error("Error updating medicine:", err);
-            setError(err.response?.data?.message || "حدث خطأ أثناء تعديل الدواء. يرجى المحاولة مرة أخرى.");
+            console.error("Error sending edit request:", err);
+            setError(err.response?.data?.message || "حدث خطأ أثناء إرسال طلب التعديل. يرجى المحاولة مرة أخرى.");
+
+            // إذا فشل الطلب، إزالة الدواء من قائمة الأدوية التي يتم تعديلها
+            setEditingMedicines((prev) => prev.filter((id) => id !== updatedMedicine.id));
         }
     };
+
+
+
+
+
 
     const handleDelete = async (id) => {
         try {
@@ -80,14 +104,10 @@ const ProviderMedicines = () => {
                 return;
             }
 
-            // تحديث حالة الدواء إلى "طلب حذف معلق" محليًا
-            setMedicines(prevMedicines =>
-                prevMedicines.map(medicine =>
-                    medicine.id === id ? { ...medicine, delete_status: 1 } : medicine
-                )
-            );
+            // إضافة الدواء إلى قائمة الأدوية التي يتم حذفها
+            setDeletingMedicines((prev) => [...prev, id]);
 
-            // إرسال طلب الحذف
+            // إرسال طلب الحذف إلى API
             const response = await axios.post(
                 `http://127.0.0.1:8000/api/medicines/${id}/request-delete`,
                 {},
@@ -100,18 +120,23 @@ const ProviderMedicines = () => {
 
             if (response.status === 200) {
                 alert("تم إرسال طلب الحذف بنجاح. انتظر موافقة الوزارة.");
-                fetchMedicines(); // إعادة جلب البيانات لتحديث القائمة من السيرفر
+
+                // تحديث حالة الدواء إلى "طلب حذف معلق"
+                setMedicines((prevMedicines) =>
+                    prevMedicines.map((medicine) =>
+                        medicine.id === id ? { ...medicine, delete_status: 1 } : medicine
+                    )
+                );
+
+                // إزالة الدواء من قائمة الأدوية التي يتم حذفها بعد التحديث
+                setDeletingMedicines((prev) => prev.filter((medicineId) => medicineId !== id));
             }
         } catch (err) {
             console.error("Error requesting medicine deletion:", err);
             setError(err.response?.data?.message || "حدث خطأ أثناء إرسال طلب الحذف. يرجى المحاولة مرة أخرى.");
 
-            // إذا تم رفض الطلب، قم بإعادة تمكين الأزرار
-            setMedicines(prevMedicines =>
-                prevMedicines.map(medicine =>
-                    medicine.id === id ? { ...medicine, delete_status: 2 } : medicine
-                )
-            );
+            // إذا فشل الطلب، إزالة الدواء من قائمة الأدوية التي يتم حذفها
+            setDeletingMedicines((prev) => prev.filter((medicineId) => medicineId !== id));
         }
     };
 
@@ -121,6 +146,7 @@ const ProviderMedicines = () => {
         const interval = setInterval(fetchMedicines, 5000);
         return () => clearInterval(interval);
     }, []);
+
 
     if (loading) {
         return (
@@ -144,6 +170,14 @@ const ProviderMedicines = () => {
             <Sidebar />
             <main className="flex-1">
                 <Navbar />
+                <div className="flex justify-end m-4">
+                    <Link to="/med/request">
+                        <button className="bg-cyan-500 text-white py-2 px-4 rounded hover:bg-cyan-700 flex items-center">
+                            <FaPlus className="mr-2" />
+                            إضافة دواء
+                        </button>
+                    </Link>
+                </div>
                 <section className="p-6">
                     <h2 className="text-2xl font-bold text-cyan-700 mb-6 text-center">الأدوية التي تمت إضافتها</h2>
 
@@ -163,38 +197,66 @@ const ProviderMedicines = () => {
                                     <p className="flex items-center gap-2 justify-center"><FaTags className="text-cyan-500" /> {medicine.type}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaClipboard className="text-cyan-500" /> {medicine.description}</p>
 
-                                    {/* تعطيل زر التعديل إذا كان الدواء في حالة "معلق للحذف" */}
                                     <button
                                         onClick={() => handleEdit(medicine)}
-                                        className={`flex items-center gap-2 justify-center ${medicine.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-cyan-500 hover:text-cyan-700'}`}
-                                        disabled={medicine.delete_status === 1}
+                                        className={`flex items-center gap-2 justify-center ${
+                                            medicine.edit_status === 1 || medicine.delete_status === 1 || editingMedicines.includes(medicine.id)
+                                                ? 'text-gray-400 cursor-not-allowed'
+                                                : 'text-cyan-500 hover:text-cyan-700'
+                                        }`}
+                                        disabled={medicine.edit_status === 1 || medicine.delete_status === 1 || editingMedicines.includes(medicine.id)}
                                     >
-                                        <FaEdit />
+                                        {editingMedicines.includes(medicine.id) || medicine.edit_status === 1 ? (
+                                            <span className="animate-spin">⏳</span>
+                                        ) : (
+                                            <FaEdit />
+                                        )}
                                     </button>
 
                                     <button
                                         onClick={() => handleDelete(medicine.id)}
-                                        className={`flex items-center gap-2 justify-center ${medicine.delete_status === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-700'}`}
-                                        disabled={medicine.delete_status === 1}
+                                        className={`flex items-center gap-2 justify-center ${
+                                            medicine.delete_status === 1 || medicine.edit_status === 1 || deletingMedicines.includes(medicine.id)
+                                                ? 'text-gray-400 cursor-not-allowed'
+                                                : 'text-red-500 hover:text-red-700'
+                                        }`}
+                                        disabled={medicine.delete_status === 1 || medicine.edit_status === 1 || deletingMedicines.includes(medicine.id)}
                                     >
-                                        <FaTrash />
+                                        {deletingMedicines.includes(medicine.id) || medicine.delete_status === 1 ? (
+                                            <span className="animate-spin">⏳</span>
+                                        ) : (
+                                            <FaTrash />
+                                        )}
                                     </button>
+
+
+
+
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-600 text-center py-4">لا توجد بيانات للأدوية.</p>
+                            <div className="flex flex-col items-center justify-center py-6">
+                                <p className="text-gray-600 text-lg">🚫 لا توجد أدوية مسجلة بعد.</p>
+                                <Link to="/med/request" className="mt-4">
+                                    <button className="bg-cyan-500 text-white py-2 px-4 rounded hover:bg-cyan-700 flex items-center">
+                                        <FaPlus className="mr-2" />
+                                        إضافة دواء جديد
+                                    </button>
+                                </Link>
+                            </div>
                         )}
 
                     </div>
                 </section>
+                <EditMedicineModal
+                    medicine={editMedicine}
+                    isOpen={isEditModalOpen}
+                    onRequestClose={() => setIsEditModalOpen(false)}
+                    onSave={handleSave}
+                />
             </main>
             <ChatButton />
-            {/*<EditMedicineModal*/}
-            {/*    medicine={editMedicine}*/}
-            {/*    isOpen={isEditModalOpen}*/}
-            {/*    onRequestClose={() => setIsEditModalOpen(false)}*/}
-            {/*    onSave={handleSave}*/}
-            {/*/>*/}
+
         </div>
     );
 };

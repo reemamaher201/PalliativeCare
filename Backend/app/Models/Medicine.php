@@ -19,6 +19,7 @@ class Medicine extends Model
         'type', // إضافة العمود type
         'add_by',
         'delete_status', // إضافة العمود الجديد
+        'edit_status',
     ];
 
     public function addedBy()

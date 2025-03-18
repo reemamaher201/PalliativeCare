@@ -94,6 +94,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/provider/patients', [PatientController::class, 'getProviderPatients']);
         Route::post('/med/request', [ProviderController::class, 'requestAddMed']);
         Route::get('/provider/medicines', [ProviderController::class, 'getProviderMedicines']);
+        Route::post('medicines/{id}/request-edit',[ProviderController::class, 'requestEditMedicine']);
 
 
 
@@ -114,3 +115,10 @@ Route::post('/patient-modification-requests', [PatientModificationRequestControl
 Route::post('/patient-modification-requests/{id}/approve', [PatientModificationRequestController::class, 'approve']);
 Route::post('/patient-modification-requests/{id}/reject', [PatientModificationRequestController::class, 'reject']);
 Route::get('/patient-modification-requests/pending', [PatientModificationRequestController::class, 'pendingRequests']);
+
+
+// routes/api.php
+Route::post('refresh-token', [AuthController::class, 'refreshToken']);
+Route::get('/modification-requests-med', [ProviderController::class, 'index']); // جلب جميع الطلبات
+Route::post('/medicine-edit-requests/{id}/approve', [ProviderController::class, 'approve']);
+Route::post('/medicine-edit-requests/{id}/reject', [ProviderController::class, 'reject']);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Landing/Navbar.jsx";
+import Navbar from "../../components/Landing/Navbar.jsx";
 import axios from "axios";
 
 const Register = () => {

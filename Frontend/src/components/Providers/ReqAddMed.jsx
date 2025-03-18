@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // استيراد useNavigate
 import Sidebar from './component/Sidebar'; // استيراد السايدبار
 import Navbar from './component/Navbar'; // استيراد الناف بار
 
@@ -9,26 +10,21 @@ const ReqAddMed = () => {
         address: '',
         delivery_date: '',
         type: '',
-        quantity:'',
-        description:''
+        quantity: '',
+        description: ''
     });
 
     const [loading, setLoading] = useState(false); // حالة التحميل
     const [error, setError] = useState(""); // حالة الخطأ العام
-
+    const navigate = useNavigate(); // تهيئة useNavigate
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setMedData({ ...medData, [name]: value });
-
     };
-
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-
 
         setLoading(true); // بدء التحميل
         setError(""); // إعادة تعيين حالة الخطأ العام
@@ -40,7 +36,8 @@ const ReqAddMed = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            alert(response.data.message);
+            alert(response.data.message); // عرض رسالة نجاح
+            navigate('/provider/medicines'); // إعادة التوجيه إلى صفحة المرضى
         } catch (error) {
             console.error('Error adding Medicine:', error);
             setError('حدث خطأ أثناء إضافة الدواء.');
@@ -89,7 +86,6 @@ const ReqAddMed = () => {
                                         onChange={handleChange}
                                         className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                     />
-
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">نوع المرض</label>
@@ -140,7 +136,6 @@ const ReqAddMed = () => {
                                         className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                     />
                                 </div>
-
                             </div>
                             <button
                                 type="submit"
