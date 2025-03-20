@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id(); // مفتاح رئيسي تلقائي (auto-incrementing) لجدول المرضى
             $table->string('identity_number'); // مفتاح أجنبي من جدول المستخدمين
             $table->string('name');
+            $table->string('phoneNumber');
             $table->string('address')->nullable();
             $table->date('birth_date')->nullable();
             $table->integer('age')->nullable();
@@ -22,7 +23,7 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->timestamps();
 
-            $table->foreign('identity_number')->references('identity_number')->on('users')->onDelete('cascade');
+            $table->foreign('identity_number')->references('identity_number')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

@@ -8,6 +8,8 @@ use App\Models\MedicineEditRequest;
 use App\Models\MedRequest;
 use App\Models\Patient;
 use App\Models\PatientDeletionRequest;
+use App\Models\PatientEditRequest;
+use App\Models\PatientModificationRequest;
 use App\Models\PatientRequest;
 use App\Models\Provider;
 use App\Models\User;
@@ -778,7 +780,8 @@ class ProviderController extends Controller
     // جلب جميع طلبات تعديل الأدوية
     public function index()
     {
-        $requests = MedicineEditRequest::with(['medicine', 'provider'])->get();
+        $requests = MedicineEditRequest::with(['medicine', 'provider']) ->where('status', '!=', 'rejected') // استبعاد الطلبات المرفوضة
+        ->get();;
 
         $requests = $requests->map(function ($request) {
             return [
@@ -845,10 +848,10 @@ class ProviderController extends Controller
         return response()->json(['message' => 'تم رفض طلب التعديل بنجاح']);
     }
 
-
     public function requestEditPatient(Request $request, $id)
     {
         try {
+            // توثيق المستخدم باستخدام التوكن
             $authUser = JWTAuth::parseToken()->authenticate();
 
             // التحقق من أن المستخدم مزود
@@ -856,28 +859,141 @@ class ProviderController extends Controller
                 return response()->json(['error' => 'غير مصرح لك بإرسال طلبات التعديل'], 403);
             }
 
-            // البحث عن الدواء
+            // البحث عن المريض
             $patient = Patient::find($id);
 
             if (!$patient) {
-                return response()->json(['error' => 'الدواء غير موجود'], 404);
+                return response()->json(['error' => 'المريض غير موجود'], 404);
             }
 
-            // تحديث حالة التعديل في جدول الأدوية
+            // التحقق من صحة البيانات المدخلة
+            $validatedData = $request->validate([
+                'identity_number' => 'required|string|max:255', // تأكد من إضافة الهوية
+                'name' => 'required|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'phoneNumber' => 'nullable|string|max:20',
+                'birth_date' => 'nullable|date',
+                'care_type' => 'nullable|string|max:255',
+                'gender' => 'nullable|string|in:male,female',
+            ]);
+
+            // التحقق من عدم تكرار الهوية
+            $existingPatient = Patient::where('identity_number', $validatedData['identity_number'])->first();
+            if ($existingPatient && $existingPatient->id !== $patient->id) {
+                return response()->json(['error' => 'رقم الهوية مستخدم بالفعل.'], 400);
+            }
+
+            // تحديث حالة التعديل في جدول المرضى
             $patient->update(['edit_status' => 1]); // 1: طلب تعديل معلق
 
             // إنشاء طلب تعديل
-            MedicineEditRequest::create([
-                'medicine_id' => $patient->id,
+            PatientEditRequest::create([
+                'patient_id' => $patient->id,
                 'provider_id' => $authUser->id,
-                'updated_data' => json_encode($request->all()), // البيانات الجديدة
+                'updated_data' => json_encode($validatedData), // تأكد من أن الهوية مضمنة هنا
                 'status' => 'pending', // حالة الطلب: pending
             ]);
 
             return response()->json(['message' => 'تم إرسال طلب التعديل بنجاح. انتظر موافقة الوزارة.'], 200);
+
         } catch (\Exception $e) {
-            Log::error('Error requesting medicine edit: ' . $e->getMessage());
-            return response()->json(['error' => 'حدث خطأ أثناء إرسال طلب التعديل'], 500);
+            // تسجيل تفاصيل الخطأ
+            Log::error('Error requesting patient edit: ' . $e->getMessage());
+
+            return response()->json(['error' => 'حدث خطأ أثناء إرسال طلب التعديل: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function show()
+    {
+        $requests = PatientEditRequest::with(['patient', 'provider'])
+            ->where('status', '!=', 'rejected') // استبعاد الطلبات المرفوضة
+            ->get();
+
+        $requests = $requests->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'patient_id' => $request->patient_id,
+                'provider_id' => $request->provider_id,
+                'updated_data' => json_decode($request->updated_data, true), // البيانات الجديدة
+                'status' => $request->status,
+                'created_at' => $request->created_at,
+                'updated_at' => $request->updated_at,
+                'patient' => $request->patient, // البيانات القديمة
+                'provider' => $request->provider,
+            ];
+        });
+
+        return response()->json($requests);
+    }
+
+
+
+    public function approvep($id)
+    {
+        $editRequest = PatientEditRequest::findOrFail($id);
+
+        if ($editRequest->status !== 'pending') {
+            return response()->json(['message' => 'لا يمكن الموافقة على طلب غير معلق'], 400);
+        }
+
+        // تحويل `updated_data` من JSON إلى مصفوفة
+        $updatedData = json_decode($editRequest->updated_data, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return response()->json(['message' => 'بيانات التعديل غير صالحة'], 400);
+        }
+
+        // جلب بيانات المريض والمستخدم المرتبط به
+        $patient = $editRequest->patient;
+        $user = User::where('identity_number', $patient->identity_number)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'المستخدم غير موجود'], 404);
+        }
+
+        // ✅ تحديث جميع الحقول في `users`
+        $user->update([
+            'name' => $updatedData['name'] ?? $user->name,
+            'identity_number' => $updatedData['identity_number'] ?? $user->identity_number,
+            'phoneNumber' => $updatedData['phoneNumber'] ?? $user->phoneNumber,
+            'address' => $updatedData['address'] ?? $user->address,
+        ]);
+
+        // ✅ تحديث جميع الحقول في `patients`
+        $patient->update([
+            'name' => $updatedData['name'] ?? $patient->name,
+            'identity_number' => $updatedData['identity_number'] ?? $patient->identity_number,
+            'phoneNumber' => $updatedData['phoneNumber'] ?? $patient->phoneNumber,
+            'address' => $updatedData['address'] ?? $patient->address,
+        ]);
+
+        // إعادة تعيين حالة التعديل
+        $patient->update(['edit_status' => 0]);
+
+        // حذف الطلب من جدول طلبات التعديل
+        $editRequest->delete();
+
+        return response()->json(['message' => 'تمت الموافقة على طلب التعديل بنجاح']);
+    }
+
+
+    // رفض طلب التعديل
+    public function rejectp($id)
+    {
+        $editRequest = PatientEditRequest::findOrFail($id);
+
+        if ($editRequest->status !== 'pending') {
+            return response()->json(['message' => 'لا يمكن رفض طلب غير معلق'], 400);
+        }
+
+        // تحديث حالة التعديل في جدول المرضى
+        $patient = $editRequest->patient;
+        $patient->update(['edit_status' => 2]); // 2: طلب تعديل مرفوض
+
+        $editRequest->status = 'rejected';
+        $editRequest->save();
+
+        return response()->json(['message' => 'تم رفض طلب التعديل بنجاح']);
     }
 }

@@ -25,7 +25,9 @@ const PatientRequests = () => {
                 medResponse,
                 deletionResponse,
                 deletionResponsep,
-                modificationResponseMed
+                modificationResponse,
+                modificationResponseMed,
+
             ] = await Promise.all([
                 axios.get('http://127.0.0.1:8000/api/patients/pending', {
                     headers: { Authorization: `Bearer ${token}` },
@@ -39,9 +41,9 @@ const PatientRequests = () => {
                 axios.get('http://127.0.0.1:8000/api/deletion-requestsp', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
-                // axios.get('http://127.0.0.1:8000/api/modification-requests', {
-                //     headers: { Authorization: `Bearer ${token}` },
-                // }),
+                axios.get('http://127.0.0.1:8000/api/modification-requests', {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
                 axios.get('http://127.0.0.1:8000/api/modification-requests-med', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
@@ -50,7 +52,7 @@ const PatientRequests = () => {
             setMedRequests(medResponse.data);
             setDeletionRequests(deletionResponse.data);
             setDeletionRequestsp(deletionResponsep.data);
-            // setModificationRequests(modificationResponse.data); // طلبات تعديل المرضى
+            setModificationRequests(modificationResponse.data); // طلبات تعديل المرضى
             setModificationRequestsMed(modificationResponseMed.data); // طلبات تعديل الأدوية
         } catch (error) {
             console.error('Error fetching requests:', error);
@@ -133,6 +135,55 @@ const PatientRequests = () => {
 
             // إزالة الطلب من القائمة بعد الرفض
             setModificationRequestsMed(modificationRequestsMed.filter(request => request.id !== id));
+        } catch (error) {
+            console.error('Error rejecting modification request:', error);
+        } finally {
+            setRejectingId(null);
+        }
+    };
+
+    const handleApproveModificationp = async (id) => {
+        setApprovingId(id);
+        try {
+            const token = localStorage.getItem('token');
+
+            // إرسال طلب الموافقة إلى API
+            await axios.post(
+                `http://127.0.0.1:8000/api/patient-edit-requests/${id}/approve`,
+                {},
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            // إزالة الطلب من القائمة بعد الموافقة
+            setModificationRequests((prevRequests) =>
+                prevRequests.filter((request) => request.id !== id)
+            );
+        } catch (error) {
+            console.error('Error approving modification request:', error);
+        } finally {
+            setApprovingId(null);
+        }
+    };
+    const handleRejectModificationp = async (id) => {
+        setRejectingId(id);
+        try {
+            const token = localStorage.getItem('token');
+
+            // إرسال طلب الرفض إلى API
+            await axios.post(
+                `http://127.0.0.1:8000/api/patient-edit-requests/${id}/reject`,
+                {},
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            // إزالة الطلب من القائمة بعد الرفض
+            setModificationRequests((prevRequests) =>
+                prevRequests.filter((request) => request.id !== id)
+            );
         } catch (error) {
             console.error('Error rejecting modification request:', error);
         } finally {
@@ -279,35 +330,39 @@ const PatientRequests = () => {
                         </TabPanel>
                         <TabPanel>
                             <h3 className="text-xl font-semibold mb-4 text-cyan-700">طلبات تعديل المرضى</h3>
-                            {/*<ul className="space-y-4">*/}
-                            {/*    {modificationRequests.map((request) => (*/}
-                            {/*        <li key={request.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">*/}
-                            {/*            <div className="flex justify-between items-center">*/}
-                            {/*                <div>*/}
-                            {/*                    <p className="text-lg font-semibold text-gray-800">{request.patient.name}</p>*/}
-                            {/*                    <p className="text-sm text-gray-500">طلب من: {request.provider.name}</p>*/}
-                            {/*                    <p className="text-sm text-gray-500">التعديلات: {request.changes}</p>*/}
-                            {/*                </div>*/}
-                            {/*                <div className="space-x-2">*/}
-                            {/*                    <button*/}
-                            {/*                        onClick={() => handleApproveModification(request.id, "modification-requests")}*/}
-                            {/*                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"*/}
-                            {/*                        disabled={approvingId === request.id}*/}
-                            {/*                    >*/}
-                            {/*                        {approvingId === request.id ? 'جاري الموافقة...' : 'موافقة'}*/}
-                            {/*                    </button>*/}
-                            {/*                    <button*/}
-                            {/*                        onClick={() => handleRejectModification(request.id, "modification-requests")}*/}
-                            {/*                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"*/}
-                            {/*                        disabled={rejectingId === request.id}*/}
-                            {/*                    >*/}
-                            {/*                        {rejectingId === request.id ? 'جاري الرفض...' : 'رفض'}*/}
-                            {/*                    </button>*/}
-                            {/*                </div>*/}
-                            {/*            </div>*/}
-                            {/*        </li>*/}
-                            {/*    ))}*/}
-                            {/*</ul>*/}
+                            <ul className="space-y-4">
+                                {modificationRequests.map((requestp) => (
+                                    <li key={requestp.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-lg font-semibold text-gray-800">
+                                                    <span className="text-cyan-700">الاسم قبل التعديل:</span> {requestp.patient.name}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    <span className="text-cyan-700">الاسم بعد التعديل:</span> {requestp.updated_data.name}
+                                                </p>
+                                                {/*<p className="text-sm text-gray-500">طلب من: {requestp.provider.name}</p>*/}
+                                            </div>
+                                            <div className="space-x-2">
+                                                <button
+                                                    onClick={() => handleApproveModificationp(requestp.id)}
+                                                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                                                    disabled={approvingId === requestp.id}
+                                                >
+                                                    {approvingId === requestp.id ? 'جاري الموافقة...' : 'موافقة'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRejectModificationp(requestp.id)}
+                                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                                                    disabled={rejectingId === requestp.id}
+                                                >
+                                                    {rejectingId === requestp.id ? 'جاري الرفض...' : 'رفض'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
                         </TabPanel>
                         <TabPanel>
                             <h3 className="text-xl font-semibold mb-4 text-cyan-700">طلبات حذف المرضى</h3>

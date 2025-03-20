@@ -95,6 +95,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/med/request', [ProviderController::class, 'requestAddMed']);
         Route::get('/provider/medicines', [ProviderController::class, 'getProviderMedicines']);
         Route::post('medicines/{id}/request-edit',[ProviderController::class, 'requestEditMedicine']);
+        Route::post('patients/{id}/request-edit',[ProviderController::class, 'requestEditPatient']);
 
 
 
@@ -111,14 +112,21 @@ Route::middleware('auth:api')->group(function () {
 //    });
 });
 
-Route::post('/patient-modification-requests', [PatientModificationRequestController::class, 'store']);
-Route::post('/patient-modification-requests/{id}/approve', [PatientModificationRequestController::class, 'approve']);
-Route::post('/patient-modification-requests/{id}/reject', [PatientModificationRequestController::class, 'reject']);
-Route::get('/patient-modification-requests/pending', [PatientModificationRequestController::class, 'pendingRequests']);
-
 
 // routes/api.php
 Route::post('refresh-token', [AuthController::class, 'refreshToken']);
 Route::get('/modification-requests-med', [ProviderController::class, 'index']); // جلب جميع الطلبات
 Route::post('/medicine-edit-requests/{id}/approve', [ProviderController::class, 'approve']);
 Route::post('/medicine-edit-requests/{id}/reject', [ProviderController::class, 'reject']);
+
+Route::post('/patient-edit-requests/{id}/approve', [ProviderController::class, 'approvep']);
+Route::post('/patient-edit-requests/{id}/reject', [ProviderController::class, 'rejectp']);
+
+Route::get('/modification-requests', [ProviderController::class, 'show']); // جلب جميع الطلبات
+
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/send-message', [ChatController::class, 'sendMessage']);
+    Route::get('/get-messages/{receiverId}', [ChatController::class, 'getMessages']);
+    Route::get('/get-chat-users', [ChatController::class, 'getChatUsers']);
+});

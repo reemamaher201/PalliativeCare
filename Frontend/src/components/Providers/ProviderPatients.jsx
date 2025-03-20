@@ -43,11 +43,12 @@ const ProviderPatients = () => {
     };
 
     const handleEdit = (patient) => {
-        if (patient.edit_status === 0) {
+        if (patient.edit_status !== 1) {
             setEditPatient(patient); // تعيين بيانات المريض
             setIsEditModalOpen(true); // فتح المودال
         }
     };
+
 
     const handleSave = async (updatedPatient) => {
         try {
@@ -57,14 +58,18 @@ const ProviderPatients = () => {
                 return;
             }
 
-            // إضافة المريض إلى قائمة المرضى الذين يتم تعديلهم
-            setEditingPatients((prev) => [...prev, updatedPatient.id]);
-
             // إرسال طلب التعديل إلى API
             const response = await axios.post(
-
-                `http://127.0.0.1:8000/api/medicines/${updatedPatient.id}/request-edit`,
-                updatedPatient,
+                `http://127.0.0.1:8000/api/patients/${updatedPatient.id}/request-edit`,
+                {
+                    identity_number: updatedPatient.identity_number, // تأكد من إرسال الهوية
+                    name: updatedPatient.name,
+                    address: updatedPatient.address,
+                    phoneNumber: updatedPatient.phoneNumber,
+                    birth_date: updatedPatient.birth_date,
+                    care_type: updatedPatient.care_type,
+                    gender: updatedPatient.gender,
+                },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -74,26 +79,10 @@ const ProviderPatients = () => {
 
             if (response.status === 201) {
                 alert("تم إرسال طلب التعديل بنجاح. انتظر الموافقة من الوزارة.");
-
-                // تحديث حالة المريض إلى "معلق للتعديل"
-                setPatients((prevPatients) =>
-                    prevPatients.map((patient) =>
-                        patient.id === updatedPatient.id ? { ...patient, edit_status: 1 } : patient
-                    )
-                );
-
-                // إزالة المريض من قائمة المرضى الذين يتم تعديلهم بعد التحديث
-                setTimeout(() => {
-                    fetchPatients();
-                    setEditingPatients((prev) => prev.filter((id) => id !== updatedPatient.id));
-                }, 2000);
             }
         } catch (err) {
             console.error("Error updating patient:", err);
             setError(err.response?.data?.message || "حدث خطأ أثناء تعديل المريض. يرجى المحاولة مرة أخرى.");
-
-            // إذا فشل الطلب، إزالة المريض من قائمة المرضى الذين يتم تعديلهم
-            setEditingPatients((prev) => prev.filter((id) => id !== updatedPatient.id));
         }
     };
 
@@ -195,7 +184,7 @@ const ProviderPatients = () => {
                                 <div key={index} className="grid grid-cols-6 border-b p-4 items-center text-gray-700 text-center">
                                     <p className="flex items-center gap-2 justify-center"><FaUser className="text-cyan-500" /> {patient.name}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaIdCard className="text-cyan-500" /> {patient.identity_number}</p>
-                                    <p className="flex items-center gap-2 justify-center"><FaPhone className="text-cyan-500" /> {patient.added_by.phoneNumber}</p>
+                                    <p className="flex items-center gap-2 justify-center"><FaPhone className="text-cyan-500" /> {patient.phoneNumber}</p>
                                     <p className="flex items-center gap-2 justify-center"><FaMapMarkerAlt className="text-cyan-500" /> {patient.address}</p>
 
                                     <button

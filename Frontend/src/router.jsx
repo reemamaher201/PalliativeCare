@@ -23,6 +23,7 @@ import ProviderPatients from "./components/Providers/ProviderPatients.jsx";
 import ReqAddMed from "./components/Providers/ReqAddMed.jsx";
 import MedRequestDetails from "./components/Ministry/MedRequestDetails.jsx";
 import ProviderMedicines from "./components/Providers/ProviderMedicines.jsx";
+import ChatPage from "./components/Ministry/Chat.jsx";
 
 const RouterComponent = () => {
     return (
@@ -40,11 +41,11 @@ const RouterComponent = () => {
 
             <Route path={"/provider/patients"} element={<ProviderPatients/>}/>
                 <Route path={"/provider/medicines"} element={<ProviderMedicines/>}/>
+            <Route path="/chat" element={<ChatPage />}/>
 
 
-            <Route
-                path="/admin-dashboard"
-                element={<AdminDashboard/>} />
+            {/*<Route*/}
+            {/*    element={<AdminDashboard/>} />*/}
 
             <Route
                 path="/user-profile"

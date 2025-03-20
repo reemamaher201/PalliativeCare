@@ -298,7 +298,7 @@ class PatientController extends Controller
                 'birth_date' => $patientRequest->birth_date,
                 'care_type' => $patientRequest->care_type,
                 'gender' => $patientRequest->gender,
-                'phoneNumber' => $user->phoneNumber,
+                'phoneNumber' => $patientRequest->phoneNumber,
                 'add_by' => $patientRequest->provider_id, // إضافة add_by
             ]);
 

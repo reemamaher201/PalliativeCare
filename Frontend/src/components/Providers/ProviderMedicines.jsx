@@ -40,7 +40,8 @@ const ProviderMedicines = () => {
     };
 
     const handleEdit = (medicine) => {
-        if (medicine.edit_status === 0) {
+        // السماح بالتعديل إذا لم يكن هناك طلب تعديل معلق (edit_status !== 1)
+        if (medicine.edit_status !== 1) {
             setEditMedicine(medicine);
             setIsEditModalOpen(true);
         }
@@ -90,7 +91,6 @@ const ProviderMedicines = () => {
             setEditingMedicines((prev) => prev.filter((id) => id !== updatedMedicine.id));
         }
     };
-
 
 
 

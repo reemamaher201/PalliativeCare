@@ -17,8 +17,10 @@ class Patient extends Model
         'birth_date',
         'care_type',
         'gender',
+        'phoneNumber',
         'add_by', // إضافة add_by إلى الحقول القابلة للتعبئة
         'delete_status', // إضافة العمود الجديد
+        'edit_status',
 
 
     ];
