@@ -5,14 +5,16 @@ const Navbar = ({ logo, background_color }) => {
     return (
         <nav dir="rtl" className="bg-cyan-700 text-white py-4 px-8 rounded-lg" style={{ backgroundColor: background_color }}>
             <div className="container mx-auto flex justify-between items-center">
-                {logo && (
+                {logo ? (
                     <img
-                        src={`http://localhost:8000${logo}`}
+                        src={logo}
                         alt="logo"
                         className="rounded-lg w-15 h-15"
                     />
+                ) : (
+                    <span>لا يوجد شعار</span>
                 )}
-                <ul className="flex space-x-4">
+                <ul className="flex space-x-8"> {/* زيادة المسافة هنا */}
                     <li>
                         <Link to="/" className="hover:underline">الصفحة الرئيسية</Link>
                     </li>

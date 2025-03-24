@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Header from "./comp/Header.jsx";
 import Sidebar from "./comp/Sidebar.jsx";
@@ -9,6 +9,8 @@ const ChatPage = () => {
     const [receiverId, setReceiverId] = useState(null);
     const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -32,6 +34,14 @@ const ChatPage = () => {
         }
     }, [receiverId]);
 
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     const handleSendMessage = async () => {
         if (message.trim() && receiverId) {
             setIsLoading(true);
@@ -53,6 +63,7 @@ const ChatPage = () => {
             );
         } catch (error) {
             console.error('خطأ في إرسال الرسالة:', error);
+            setError("حدث خطأ أثناء إرسال الرسالة.");
         }
     };
 
@@ -66,6 +77,7 @@ const ChatPage = () => {
             return response.data.messages;
         } catch (error) {
             console.error('خطأ في جلب الرسائل:', error);
+            setError("حدث خطأ أثناء جلب الرسائل.");
             return [];
         }
     };
@@ -80,21 +92,26 @@ const ChatPage = () => {
             return response.data.users;
         } catch (error) {
             console.error('خطأ في جلب المستخدمين:', error);
+            setError("حدث خطأ أثناء جلب المستخدمين.");
             return [];
         }
     };
 
     return (
         <div dir="rtl" className="min-h-screen flex flex-col">
+
             <Header />
-            <div className="flex flex-grow">
+            <div className="flex flex-grow"><Sidebar/>
                 <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4 shadow-md">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">الدردشات</h3>
-                    <input
-                        type="text"
-                        placeholder="بحث"
-                        className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-cyan-500 mb-4"
-                    />
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="بحث"
+                            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-cyan-500 mb-4 pl-10"
+                        />
+                        <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
                     <ul className="space-y-3 overflow-y-auto mt-2">
                         {users.map((user) => (
                             <li
@@ -102,14 +119,19 @@ const ChatPage = () => {
                                 className={`p-2 rounded-md cursor-pointer hover:bg-gray-100 ${receiverId === user.id ? "bg-cyan-100" : ""}`}
                                 onClick={() => setReceiverId(user.id)}
                             >
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 flex items-center justify-center">
-                                        <span className="text-lg font-semibold text-gray-700">{user.name.charAt(0)}</span>
+                                <div className="flex items-center relative">
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 flex items-center justify-center overflow-hidden">
+                                        {user.profile_picture ? (
+                                            <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-lg font-semibold text-gray-700">{user.name.charAt(0)}</span>
+                                        )}
                                     </div>
-                                    <div>
+                                    <div className="flex-grow">
                                         <h4 className="font-semibold text-gray-800">{user.name}</h4>
                                         <p className="text-sm text-gray-500">{user.user_type === 0 ? "وزارة" : user.user_type === 1 ? "مزود" : "مريض"}</p>
                                     </div>
+                                    <div className={`absolute top-0 right-0 w-2 h-2 rounded-full ${user.is_active ? "bg-green-500" : "bg-red-500"}`}></div>
                                 </div>
                             </li>
                         ))}
@@ -127,11 +149,13 @@ const ChatPage = () => {
                             <div
                                 key={msg.id}
                                 className={`max-w-sm rounded-xl p-3 ${msg.sender_id === receiverId ? "bg-gray-100 self-start" : "bg-cyan-500 text-white self-end"}`}
+                                style={{ maxWidth: "70%" }}
                             >
-                                {msg.message}
+                                <p className="text-sm">{msg.message}</p>
+                                <p className="text-xs text-gray-500 mt-1">{new Date(msg.created_at).toLocaleTimeString()}</p>
                             </div>
                         ))}
-                        {messages.length === 0 && (<div className="text-center">لا يوجد رسائل</div>)}
+                        <div ref={messagesEndRef} />
                     </div>
                     <div className="flex items-center">
                         <input
@@ -150,6 +174,7 @@ const ChatPage = () => {
                         </button>
                     </div>
                     {isLoading && <div className="text-center mt-4">جاري التحميل...</div>}
+                    {error && <div className="text-red-500 text-center mt-4">{error}</div>}
                 </div>
             </div>
         </div>

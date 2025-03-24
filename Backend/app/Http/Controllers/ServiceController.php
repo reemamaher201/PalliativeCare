@@ -25,16 +25,18 @@ $request->validate([
 
 // حفظ الصورة في المجلد العام (public)
 if ($request->hasFile('image')) {
-$imagePath = $request->file('image')->store('images', 'public');
+    $imagePath = $request->file('image')->storePublicly('images', 'public');
+$imageUrl = url(Storage::url($imagePath)); // إنشاء رابط URL كامل
+
 } else {
-$imagePath = null;
+    $imageUrl = null;
 }
 
 // إنشاء خدمة جديدة
 $service = Service::create([
 'title' => $request->title,
 'content' => $request->content,
-'image' => $imagePath ? Storage::url($imagePath) : null, // حفظ رابط الصورة
+'image' => $imageUrl, // حفظ رابط الصورة
 ]);
 
 return response()->json($service, 201);

@@ -1,25 +1,23 @@
-
 import './App.css'
 import RouterComponent from "./router.jsx";
 import { refreshToken } from './services/Auth/auth.jsx';
-import {useEffect} from "react";
-
+import { useEffect } from "react";
 
 function App() {
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (token) {
-            // تجديد الـ Token كل 14 دقيقة (قبل انتهاء صلاحيته بـ 1 دقيقة)
+            // 🔄 تجديد التوكن كل 14 دقيقة (قبل انتهائه بدقيقة)
             const interval = setInterval(refreshToken, 14 * 60 * 1000);
-            return () => clearInterval(interval); // تنظيف الفاصل الزمني عند إلغاء المكون
+            return () => clearInterval(interval);
         }
     }, []);
 
-  return(
-      <div>
-        <RouterComponent/>
-      </div>
-  );
+    return (
+        <div>
+            <RouterComponent />
+        </div>
+    );
 }
 
-export default App
+export default App;

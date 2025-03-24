@@ -6,50 +6,17 @@ import backgroundImage from '../../assets/bg.png';
 const Login = () => {
     const [identityNumber, setIdentityNumber] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || "/";
 
     useEffect(() => {
-        document.title = "تسجيل الدخول";
-        const token = localStorage.getItem("token");
-        if (token) {
-            const decodedToken = JSON.parse(atob(token.split('.')[1]));
-            navigate(getUserDashboardPath(decodedToken.user_type));
-        }
-    }, [navigate]);
-
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            const interval = setInterval(refreshToken, 14 * 60 * 1000);
-            return () => clearInterval(interval);
-        }
-    }, []);
-
-    const refreshToken = async () => {
-        try {
-            const response = await axios.post("http://127.0.0.1:8000/api/refresh-token", {}, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            localStorage.setItem("token", response.data.token);
-        } catch (error) {
-            console.error("Failed to refresh token:", error);
-            logout();
-        }
-    };
-
-    const logout = () => {
         localStorage.removeItem("token");
-        localStorage.removeItem("rememberMe");
-        navigate("/login");
-    };
+        sessionStorage.removeItem("token");
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -74,10 +41,40 @@ const Login = () => {
                 password,
             });
 
-            localStorage.setItem("token", response.data.token);
+            console.log("Login response:", response.data);
+
+            const token = response.data.data.token;
+            if (!token) {
+                throw new Error("Token not found in response");
+            }
+
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+            if (rememberMe) {
+                localStorage.setItem("token", token);
+            } else {
+                sessionStorage.setItem("token", token);
+            }
             localStorage.setItem("rememberMe", rememberMe ? "true" : "");
-            const decodedToken = JSON.parse(atob(response.data.token.split('.')[1]));
-            navigate(getUserDashboardPath(decodedToken.user_type));
+
+            // فحص وجود الـ token بعد تسجيل الدخول
+            const storedToken = rememberMe ? localStorage.getItem("token") : sessionStorage.getItem("token");
+            if (!storedToken) {
+                setError("حدث خطأ في تخزين رمز الوصول. يرجى المحاولة مرة أخرى.");
+                setLoading(false);
+                return;
+            }
+
+            // استخراج user_type من الـ token
+            const userType = getUserTypeFromToken(token);
+            if (userType === null) {
+                setError("حدث خطأ في فك تشفير الـ Token.");
+                setLoading(false);
+                return;
+            }
+
+            // توجيه المستخدم بناءً على user_type
+            navigate(getUserPath(userType));
         } catch (error) {
             handleError(error);
         } finally {
@@ -93,17 +90,33 @@ const Login = () => {
                     setError("بيانات الاعتماد غير صحيحة.");
                     break;
                 case 403:
-                    setError("غير مصرح لك بالوصول.");
+                    if (error.response.data.message === "User not found") {
+                        setError("المستخدم غير موجود.");
+                    } else {
+                        setError("غير مصرح لك بالوصول.");
+                    }
                     break;
                 default:
-                    setError(error.response.data.message || "فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك.");
+                    setError(error.response.data.message || "حدث خطأ أثناء تسجيل الدخول.");
             }
+        } else if (error.message === "Token not found in response") {
+            setError("لم يتم العثور على الـ Token في الاستجابة.");
         } else {
             setError("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
         }
     };
 
-    const getUserDashboardPath = (userType) => {
+    const getUserTypeFromToken = (token) => {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.user_type; // افترض أن الـ token يحتوي على user_type
+        } catch (error) {
+            console.error("Failed to decode token:", error);
+            return null;
+        }
+    };
+
+    const getUserPath = (userType) => {
         switch (userType) {
             case 0: return "/dashboardM";
             case 1: return "/dashboardS";
@@ -114,16 +127,13 @@ const Login = () => {
     };
 
     return (
-        <div
-            dir="rtl"
-            className="min-h-screen flex items-center justify-center relative"
-            style={{
-                backgroundImage: `url(${backgroundImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-            }}
-        >
+        <div dir="rtl" className="min-h-screen flex items-center justify-center relative" style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+        }}>
             <div className="absolute inset-0 bg-black opacity-50"></div>
+
             <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg relative z-10">
                 <h2 className="text-2xl font-bold text-center text-cyan-700 mb-6">تسجيل دخول</h2>
 

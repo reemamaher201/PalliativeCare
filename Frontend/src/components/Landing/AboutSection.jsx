@@ -1,23 +1,27 @@
 import React from "react";
+import { Info } from "lucide-react"; // استيراد أيقونة من مكتبة lucide-react
 
-const AboutSection = ({imgabout, main_heading, main_text }) => {
+const AboutSection = ({ imgabout, main_heading, main_text }) => {
     return (
-        <section className="py-16 px-8">
-            <div className="shadow rounded-lg container mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-4">
+        <section className="py-16 px-8 bg-gray-50">
+            <div className="shadow-lg rounded-xl container mx-auto flex flex-col md:flex-row items-center justify-between gap-12 px-6 py-8 bg-white">
+                {/* صورة تعريفية */}
                 <div className="w-full md:w-1/2 flex justify-center">
                     <img
-                        src={`http://localhost:8000${imgabout}`}
+                        src={imgabout}
                         alt="عن الموقع"
-                        className="rounded-lg shadow-md"
+                        className="rounded-lg shadow-md w-4/5 max-w-sm"
                     />
                 </div>
-                <div className="w-full md:w-1/2 text-center md:text-right">
-                    <h2 className="text-2xl font-bold mb-4 text-gray-800">{main_heading}</h2>
-                    <p className="text-gray-700 leading-relaxed">
-                        {main_text}
-                    </p>
-                </div>
 
+                {/* نص حول الموقع */}
+                <div className="w-full md:w-1/2 text-center md:text-right">
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-4 flex items-center justify-end gap-3">
+                        {main_heading}
+                        <Info className="text-cyan-600 w-8 h-8" /> {/* أيقونة عن الموقع */}
+                    </h2>
+                    <p className="text-gray-700 leading-relaxed text-lg">{main_text}</p>
+                </div>
             </div>
         </section>
     );

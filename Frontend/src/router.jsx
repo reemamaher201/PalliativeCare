@@ -44,8 +44,7 @@ const RouterComponent = () => {
             <Route path="/chat" element={<ChatPage />}/>
 
 
-            {/*<Route*/}
-            {/*    element={<AdminDashboard/>} />*/}
+            <Route path={"/admin-dashboard"} element={<AdminDashboard/>} />
 
             <Route
                 path="/user-profile"

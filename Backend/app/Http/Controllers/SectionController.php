@@ -21,23 +21,27 @@ class SectionController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // تحقق من أن الملف صورة
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // حفظ الصورة في المجلد العام (public)
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images', 'public');
+            $imagePath = $request->file('image')->storePublicly('images', 'public');
+            $imageUrl = url(Storage::url($imagePath)); // إنشاء رابط URL كامل
+
         } else {
-            $imagePath = null;
+            $imageUrl = null;
         }
 
         // إنشاء قسم جديد
         $section = Section::create([
             'title' => $request->title,
             'content' => $request->content,
-            'image' => $imagePath ? Storage::url($imagePath) : null, // حفظ رابط الصورة
+            'image' => $imageUrl, // حفظ رابط URL كامل
         ]);
 
         return response()->json($section, 201);
     }
+
+
 }

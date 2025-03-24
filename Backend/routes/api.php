@@ -1,12 +1,15 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\FeaturesController;
+use App\Http\Controllers\FooterController;
 use App\Http\Controllers\MedicineController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientController;
-use App\Http\Controllers\PatientModificationRequestController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\ServiceController;
@@ -19,10 +22,18 @@ Route::post('/register', [AuthController::class, 'register'])->name('auth.regist
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 
 // Routes العامة (لا تتطلب تسجيل الدخول)
-Route::get('/landing-page', [LandingPageController::class, 'index']);
-Route::get('/settings', [SettingController::class, 'index']);
+Route::get('/show', [SettingController::class, 'show']);
 Route::get('/sections', [SectionController::class, 'index']);
 Route::get('/services', [ServiceController::class, 'index']);
+Route::get('/blogs', [BlogController::class, 'index']);
+Route::get('/features', [FeaturesController::class, 'index']);
+Route::get('/fastlink', [FooterController::class, 'indexLink']);
+Route::get('/social', [FooterController::class, 'index']);
+
+Route::post('/subscribe', [NewsletterController::class, 'subscribe']);
+Route::get('/subscribers', [NewsletterController::class, 'getSubscribers']);
+Route::post('/send-newsletter', [NewsletterController::class, 'sendNewsletter']);
+
 
 // Routes المحمية (تتطلب تسجيل الدخول)
 Route::middleware('auth:api')->group(function () {
@@ -38,13 +49,18 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/showprovider', [ProviderController::class, 'showprovider'])->name('provider.showprovider');
     Route::post('/storeprovider', [ProviderController::class, 'storeprovider'])->name('provider.storeprovider');
     Route::get('/showpatient', [PatientController::class, 'showpatient'])->name('user.showpatient');
+    Route::get('admin-dashboard',[AdminDashboardController::class,'show']);
 
     Route::middleware(['check.user_type:Admin'])->group(function () {
-        Route::post('/admin/landing-page', [LandingPageController::class, 'update']);
-        Route::post('/admin/upload-image', [LandingPageController::class, 'uploadImage']);
         Route::post('/settings/update', [SettingController::class, 'store']);
         Route::post('/sections', [SectionController::class, 'store']);
         Route::post('/services', [ServiceController::class, 'store']);
+        Route::post('/blogs', [BlogController::class, 'store']);
+        Route::post('/features', [FeaturesController::class, 'store']);
+        Route::post('/fastlink', [FooterController::class, 'storelink']);
+        Route::post('/social', [FooterController::class, 'store']);
+
+
     });
     Route::post('/patients/approve/{id}', [PatientController::class, 'approvePatientRequest']);
     Route::post('/patients/reject/{id}', [PatientController::class, 'rejectPatientRequest']);
@@ -126,7 +142,18 @@ Route::get('/modification-requests', [ProviderController::class, 'show']); // ج
 
 
 Route::middleware('auth:api')->group(function () {
+    // إرسال رسالة
     Route::post('/send-message', [ChatController::class, 'sendMessage']);
+
+    // الحصول على الرسائل بين مستخدمين
     Route::get('/get-messages/{receiverId}', [ChatController::class, 'getMessages']);
+
+    // الحصول على قائمة المستخدمين للدردشة
     Route::get('/get-chat-users', [ChatController::class, 'getChatUsers']);
+
+    // تحديث حالة المستخدم إلى أونلاين
+    Route::post('/set-user-online', [ChatController::class, 'setUserOnline']);
+
+    // تحديث حالة المستخدم إلى أوفلاين
+    Route::post('/set-user-offline', [ChatController::class, 'setUserOffline']);
 });
