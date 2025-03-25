@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import Sidebar from "./comp/Sidebar.jsx";
+import Header from "./comp/Header.jsx";
+
 
 const AddPatient = () => {
     const [patientData, setPatientData] = useState({
@@ -22,28 +25,6 @@ const AddPatient = () => {
         setPatientData({ ...patientData, [e.target.name]: e.target.value });
     };
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     setError(null);
-    //     setSuccess(null);
-    //
-    //     // التحقق من أن رقم الهاتف ليس فارغًا
-    //     if (!patientData.phone_number) {
-    //         setError("الرجاء إدخال رقم الهاتف.");
-    //         return;
-    //     }
-    //
-    //     try {
-    //         const token = localStorage.getItem("token");
-    //         await axios.post("http://127.0.0.1:8000/api/storepatient", patientData, {
-    //             headers: { Authorization: `Bearer ${token}` },
-    //         });
-    //         setSuccess("تمت إضافة المريض بنجاح!");
-    //         navigate("/showpatient");
-    //     } catch (err) {
-    //         setError(err.response?.data?.message || "حدث خطأ أثناء إضافة المريض.");
-    //     }
-    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -70,15 +51,12 @@ const AddPatient = () => {
     };
     return (
         <div dir={"rtl"} className="flex min-h-screen bg-gray-100">
-            {/* الشريط الجانبي */}
-            <aside className="w-1/4 bg-cyan-700 text-white p-6">
-                {/* ... */}
-            </aside>
+            <Sidebar />
 
             {/* المحتوى الرئيسي */}
-            <main className="flex-1 p-6">
-                {/* ... */}
-                <section>
+            <main className="flex-1 ">
+                <Header />
+               <section className={'px-6'}>
                     <h3 className="text-lg font-bold text-cyan-700 mb-6">إضافة مريض جديد</h3>
                     {error && <p className="text-red-500">{error}</p>}
                     {success && <p className="text-green-500">{success}</p>}

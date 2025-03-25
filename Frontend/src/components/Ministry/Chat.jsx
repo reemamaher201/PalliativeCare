@@ -100,11 +100,14 @@ const ChatPage = () => {
     return (
         <div dir="rtl" className="min-h-screen flex flex-col">
 
-            <Header />
             <div className="flex flex-grow"><Sidebar/>
+
                 <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4 shadow-md">
+
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">الدردشات</h3>
+
                     <div className="relative">
+
                         <input
                             type="text"
                             placeholder="بحث"
@@ -113,6 +116,7 @@ const ChatPage = () => {
                         <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
                     <ul className="space-y-3 overflow-y-auto mt-2">
+
                         {users.map((user) => (
                             <li
                                 key={user.id}
@@ -139,6 +143,7 @@ const ChatPage = () => {
                     </ul>
                 </div>
                 <div className="w-3/4 p-4 flex flex-col">
+
                     <div className="border-b pb-4 mb-4">
                         <h3 className="text-xl font-semibold text-gray-800">
                             {receiverId ? users.find((user) => user.id === receiverId)?.name : "اختر محادثة"}

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Sidebar from "./comp/Sidebar.jsx";
 import Modal from "react-modal";
+import Header from "./comp/Header.jsx";
 
 const ShowPatients = () => {
     const [patients, setPatients] = useState([]);
@@ -60,7 +61,7 @@ const ShowPatients = () => {
         const filtered = patients.filter(
             (patient) =>
                 patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                patient.nationalId.toLowerCase().includes(searchQuery.toLowerCase())
+                patient.identity_number.toLowerCase().includes(searchQuery.toLowerCase())
         );
         setFilteredPatients(filtered);
     };
@@ -284,18 +285,12 @@ const ShowPatients = () => {
             <Sidebar/>
 
             {/* Main content */}
-            <main className="flex-1 p-6">
+            <main className="flex-1 ">
                 {/* Header */}
-                <header className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-bold">{ministryName}</h1>
-                    <div className="flex space-x-4">
-                        <i className="fas fa-bell text-gray-500 text-lg cursor-pointer"></i>
-                        <i className="fas fa-envelope text-gray-500 text-lg cursor-pointer"></i>
-                    </div>
-                </header>
+               <Header/>
 
                 {/* Search bar and add button */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-6 p-6">
                     <div className="relative w-1/3">
                         <input
                             type="text"
@@ -314,9 +309,9 @@ const ShowPatients = () => {
                 </div>
 
                 {/* Patients table */}
-                <section>
+                <section className={'p-6'}>
                     <h3 className="text-lg font-bold text-gray-700 mb-4">قائمة المرضى</h3>
-                    <table className="w-full border-collapse bg-white shadow-lg rounded-lg">
+                    <table className="w-full border-collapse bg-white shadow-lg rounded-lg ">
                         <thead>
                         <tr className="bg-gray-200">
                             <th className="px-4 py-2 text-right">اسم المريض</th>

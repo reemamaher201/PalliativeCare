@@ -15,6 +15,8 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [settings, setSettings] = useState(null);
+
 
     // خيارات نوع الرعاية
     const careTypeOptions = [
@@ -22,6 +24,26 @@ const Register = () => {
         { value: "specialized", label: "رعاية متخصصة" },
         { value: "emergency", label: "رعاية طارئة" },
     ];
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const [
+                    settingsRes,
+                ] = await Promise.all([
+                    axios.get("http://localhost:8000/api/show"),
+                ]);
+
+                setSettings(settingsRes.data);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setError("حدث خطأ أثناء تحميل البيانات.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchData();
+    }, []);
 
     useEffect(() => {
         document.title = "إنشاء حساب";
@@ -126,7 +148,7 @@ const Register = () => {
         <div dir="rtl" className="bg-gray-100 font-sans min-h-screen">
             {/* شريط التنقل */}
             <div className="font-sans">
-                <Navbar />
+                <Navbar logo={settings?.logo || ""} background_color={settings?.background_color || "#fff"} />
             </div>
 
             {/* نموذج إنشاء الحساب */}

@@ -60,7 +60,13 @@ const AdminDashboard = () => {
     const handleAddSocial = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:8000/api/social", newSocial);
+            await axios.post("http://localhost:8000/api/social", newSocial,{
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
+                },
+            });
             alert("تمت إضافة رقم التواصل بنجاح");
             setNewSocial({ social: '' });
         } catch (error) {
@@ -70,7 +76,13 @@ const AdminDashboard = () => {
     const handleAddLink = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:8000/api/fastlink", newLink);
+            await axios.post("http://localhost:8000/api/fastlink", newLink,{
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
+                },
+            });
             alert("تمت إضافة الرابط بنجاح");
             setNewLink({title:'',link: ''});
         } catch (error) {
@@ -95,6 +107,8 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/features", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
                 },
             });
             alert("تمت إضافة الميزة بنجاح");
@@ -161,6 +175,8 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/sections", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
                 },
             });
             alert("تمت إضافة القسم بنجاح");
@@ -181,6 +197,8 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/services", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
                 },
             });
             alert("تمت إضافة الخدمة بنجاح");
@@ -193,7 +211,13 @@ const AdminDashboard = () => {
     const handleAddBlog = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:8000/api/blogs", newBlog);
+            await axios.post("http://localhost:8000/api/blogs", newBlog,{
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
+                },
+            });
             alert("تمت إضافة المدونة بنجاح");
             setNewBlog({ title: '', content: '', link: '' });
         } catch (error) {
@@ -225,6 +249,8 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/settings/update", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+
                 },
             });
             alert("تم حفظ التعديلات بنجاح");
@@ -256,12 +282,12 @@ const AdminDashboard = () => {
                 ]);
 
                 setSettings(settingsRes.data);
-                setSections(sectionsRes.data || []);
-                setServices(servicesRes.data || []);
-                setBlogs(blogsRes.data || []);
-                setFeatures(featuresRes.data || []);
-                setSocialLinks(socialRes.data || []);
-                setFastLinks(linksRes.data || []);
+                setNewSection(sectionsRes.data || []);
+                setNewService(servicesRes.data || []);
+                setNewBlog(blogsRes.data || []);
+                setNewFeature(featuresRes.data || []);
+                setNewSocial(socialRes.data || []);
+                setNewlink(linksRes.data || []);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -456,6 +482,9 @@ const AdminDashboard = () => {
                                 <label className="block text-gray-700">النص الرئيسي:</label>
                                 <textarea name="main_text" value={settings.main_text} onChange={handleSettingsChange} className="w-full px-4 py-2 border rounded mb-4" />
 
+                                <label className="block text-gray-700">نص التذييل:</label>
+                                <input type="text" name="footer_text" value={settings.footer_text} onChange={handleSettingsChange} className="w-full px-4 py-2 border rounded mb-4" />
+
                                 <label className="block text-gray-700">عن الموقع:</label>
                                 <input type="file" onChange={handleImageAboutChange} className="w-full px-4 py-2 border rounded mb-4" />
                                 {settings.imgabout && typeof settings.imgabout === 'string' && <img src={`http://localhost:8000${settings.imgabout}`} alt="الموضوع الحالي" className="w-20 h-20 mt-2" />}
@@ -464,7 +493,7 @@ const AdminDashboard = () => {
                                 <input type="color" name="background_color" value={settings.background_color} onChange={handleSettingsChange} className="w-full px-4 py-2 border rounded mb-4" />
 
                                 <label className="block text-gray-700">لون الأزرار:</label>
-                                <input type="color" name="background_color" value={settings.button_color} onChange={handleSettingsChange} className="w-full px-4 py-2 border rounded mb-4" />
+                                <input type="color" name="button_color" value={settings.button_color} onChange={handleSettingsChange} className="w-full px-4 py-2 border rounded mb-4" />
 
 
                                 <button type="submit" className="bg-cyan-500 text-white px-4 py-2 rounded">حفظ التعديلات</button>

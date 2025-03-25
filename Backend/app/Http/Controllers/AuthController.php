@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -20,18 +21,41 @@ class AuthController extends Controller
             'identity_number' => 'required|string|unique:users|regex:/^[0-9]+$/',
             'password' => 'required|string|min:8',
             'address' => 'required|string',
-            'user_type' => 'required|integer|in:0,1,2,3',
+            'birth_date' => 'required|date',
+            'care_type' => 'required|string',
+            'gender' => 'required|string|in:male,female',
+            'user_type' => 'integer|in:0,1,2,3',
+            'added_by' => 'nullable|integer',
         ]);
 
+        // حساب العمر من تاريخ الميلاد
+        $birthDate = new \Carbon\Carbon($request->birth_date);
+        $age = $birthDate->diffInYears(\Carbon\Carbon::now());
+
+        // إنشاء المستخدم
         $user = User::create([
             'name' => $request->name,
             'phoneNumber' => $request->phoneNumber,
             'identity_number' => $request->identity_number,
             'password' => Hash::make($request->password),
             'address' => $request->address,
-            'user_type' => $request->user_type,
+            'user_type' => User::USER_TYPE_PATIENT,
         ]);
 
+        // إضافة بيانات المريض في جدول المرضى
+        Patient::create([
+            'identity_number' => $request->identity_number,
+            'name' => $request->name,
+            'phoneNumber' => $request->phoneNumber,
+            'address' => $request->address,
+            'birth_date' => $request->birth_date,
+            'age' => $age, // يتم حساب العمر هنا
+            'care_type' => $request->care_type,
+            'gender' => $request->gender,
+            'add_by' => $user->id,
+        ]);
+
+        // إنشاء توكن JWT
         $token = JWTAuth::fromUser($user);
 
         return response()->json([
@@ -40,7 +64,6 @@ class AuthController extends Controller
             'token' => $token,
         ], 201);
     }
-
     public function login(Request $request)
     {
         $request->validate([

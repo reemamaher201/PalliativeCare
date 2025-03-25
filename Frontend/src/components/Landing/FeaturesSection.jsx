@@ -1,10 +1,73 @@
 import React, { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+    FaInfo,
+    FaCheck,
+    FaEye,
+    FaPlus,
+    FaCog,
+    FaTools,
+    FaListAlt,
+    FaBlog,
+    FaBook,
+    FaLink,
+    FaPhone,
+    FaTimes,
+    FaUser,
+    FaStar,
+    FaHeart,
+    FaBell,
+    FaComment,
+    FaMusic,
+    FaLock,
+    FaPaperPlane,
+    FaClipboard,
+    FaTasks,
+    FaGlobe,
+    FaClipboardList,
+    FaChartBar,
+    FaHeartBroken,
+    FaLightbulb,
+    FaPaperclip,
+    FaUserPlus,
+    FaUserTimes
+} from "react-icons/fa"; // Font Awesome
 
 const FeaturesSection = ({ features }) => {
     const [startIndex, setStartIndex] = useState(0);
     const itemsPerPage = 3;
-
+    const availableIcons = [
+        {icon: <FaInfo/>,name: 'info-circle'},
+        { icon: <FaCheck />, name: 'Check' },
+        { icon: <FaEye />, name: 'Eye' },
+        { icon: <FaPlus />, name: 'Plus' },
+        { icon: <FaCog />, name: 'Settings' },
+        { icon: <FaTools />, name: 'Tools' },
+        { icon: <FaListAlt />, name: 'List' },
+        { icon: <FaBlog />, name: 'Blog' },
+        { icon: <FaBook />, name: 'Book' },
+        { icon: <FaLink />, name: 'Link' },
+        { icon: <FaPhone />, name: 'Phone' },
+        { icon: <FaTimes />, name: 'Close' },
+        { icon: <FaUser />, name: 'User' },
+        { icon: <FaStar />, name: 'Star' },
+        { icon: <FaHeart />, name: 'Heart' },
+        { icon: <FaBell />, name: 'Bell' },
+        { icon: <FaComment />, name: 'Comment' },
+        { icon: <FaMusic />, name: 'Music' },
+        { icon: <FaLock />, name: 'Lock' },
+        { icon: <FaPaperPlane />, name: 'Paper Plane' },
+        { icon: <FaClipboard />, name: 'Clipboard' },
+        { icon: <FaTasks />, name: 'Tasks' },
+        { icon: <FaGlobe />, name: 'Globe' },
+        { icon: <FaClipboardList />, name: 'Clipboard List' },
+        { icon: <FaChartBar />, name: 'Chart' },
+        { icon: <FaHeartBroken />, name: 'Broken Heart' },
+        { icon: <FaLightbulb />, name: 'Light Bulb' },
+        { icon: <FaPaperclip />, name: 'Paperclip' },
+        { icon: <FaUserPlus />, name: 'User Plus' },
+        { icon: <FaUserTimes />, name: 'User Times' }
+    ];
     const handleNext = () => {
         if (startIndex + itemsPerPage < features.length) {
             setStartIndex(startIndex + itemsPerPage);
@@ -17,6 +80,7 @@ const FeaturesSection = ({ features }) => {
         }
     };
 
+
     const displayedFeatures = features.slice(startIndex, startIndex + itemsPerPage);
     const totalPages = Math.ceil(features.length / itemsPerPage);
     const currentPage = Math.floor(startIndex / itemsPerPage) + 1;
@@ -27,17 +91,29 @@ const FeaturesSection = ({ features }) => {
                 <h2 className="text-3xl font-extrabold mb-8 text-gray-900">⭐ مزايا التسجيل</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 mb-8">
-                    {displayedFeatures.map((feature, index) => (
+                    {displayedFeatures.map((feature, index) => {
+                        const iconData = availableIcons.find(icon => icon.name === feature.icon);
+
+                        return (
                         <div
                             key={index}
-                            className="bg-white shadow-lg rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                            className="bg-white shadow-lg rounded-xl p-6 transition-transform transform hover:scale-105 hover:shadow-2xl"
                         >
-                            <h3 className="text-xl font-bold text-cyan-700 mb-4">
+                            <h3 className="text-xl font-bold text-cyan-700 mb-4 flex items-center justify-center gap-2">
+                                {/* عرض الأيقونة إذا تم العثور عليها */}
+                                {iconData && <span className="text-3xl">{iconData.icon}</span>}
                                 {feature.title}
                             </h3>
+
+                            {/* نص الميزة */}
                             <p className="text-gray-700">{feature.content}</p>
-                        </div>
-                    ))}
+
+                            {/* صورة توضيحية إن وجدت */}
+                            {feature.image && (
+                                <img src={feature.image} alt={feature.title} className="w-full h-40 object-cover mt-4 rounded-lg" />
+                            )}
+                        </div>);
+                    })}
                 </div>
 
                 {features.length > itemsPerPage && (

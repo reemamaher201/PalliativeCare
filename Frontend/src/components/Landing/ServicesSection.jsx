@@ -25,7 +25,7 @@ const ServicesSection = ({ services }) => {
                                 <img
                                     src={service.image}
                                     alt={service.title}
-                                    className="w-full h-40 object-cover mt-4 rounded-lg"
+                                    className="w-full h-60 object-cover mt-4 rounded-lg"
                                 />
                             )}
                         </div>

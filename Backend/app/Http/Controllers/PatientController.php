@@ -108,6 +108,7 @@ class PatientController extends Controller
                 'identity_number' => $request->identity_number,
                 'name' => $request->name,
                 'address' => $request->address,
+                'phoneNumber' => $request->phoneNumber,
                 'birth_date' => $request->birth_date,
                 'care_type' => $request->care_type,
                 'gender' => $request->gender,

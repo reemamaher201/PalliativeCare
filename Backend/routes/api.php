@@ -90,21 +90,21 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/deletion-requests', [ProviderController::class, 'getDeletionRequests']);
     Route::get('/deletion-requestsp', [ProviderController::class, 'getDeletionRequestsp']);
 
-
+    Route::get('/showmedicines', [MedicineController::class, 'index'])->name('medicine.index');
+    Route::post('/storemedicine', [MedicineController::class, 'store'])->name('medicine.store');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notification.index');
+    Route::post('/addnotification', [NotificationController::class, 'store'])->name('notification.store');
+    Route::put('/updatenotification/{id}', [NotificationController::class, 'updatenotification'])->name('notification.updatenotification');
+    Route::delete('/deletenotification/{id}', [NotificationController::class, 'destroynotification'])->name('notification.deletenotification');
 
     // Routes خاصة بمزودي الخدمة
     Route::middleware(['check.user_type:PROVIDER'])->group(function () {
         Route::get('/dashboardS', [ProviderController::class, 'dashboardS'])->name('provider.dashboardS');
         Route::put('/updateprovider/{id}', [ProviderController::class, 'update'])->name('provider.updateprovider');
         Route::delete('/deleteprovider/{id}', [ProviderController::class, 'destroy'])->name('provider.deleteprovider');
-        Route::get('/showmedicines', [MedicineController::class, 'index'])->name('medicine.index');
-        Route::post('/storemedicine', [MedicineController::class, 'store'])->name('medicine.store');
         Route::put('/updatemedicine/{id}', [MedicineController::class, 'updateMedicine'])->name('medicine.updatemedicine');
         Route::delete('/deletemedicine/{id}', [MedicineController::class, 'destroyMedicine'])->name('medicine.deletemedicine');
-        Route::get('/notifications', [NotificationController::class, 'index'])->name('notification.index');
-        Route::post('/addnotification', [NotificationController::class, 'store'])->name('notification.store');
-        Route::put('/updatenotification/{id}', [NotificationController::class, 'updatenotification'])->name('notification.updatenotification');
-        Route::delete('/deletenotification/{id}', [NotificationController::class, 'destroynotification'])->name('notification.deletenotification');
+
         Route::post('/patients/request', [PatientController::class, 'requestAddPatient']);
         Route::get('/patients/check-identity/{identityNumber}', [PatientController::class, 'checkIdentityNumber']);
         Route::get('/provider/patients', [PatientController::class, 'getProviderPatients']);
