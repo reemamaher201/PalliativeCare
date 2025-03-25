@@ -31,8 +31,9 @@ import {
     FaLightbulb,
     FaPaperclip,
     FaUserPlus,
-    FaUserTimes
-} from "react-icons/fa"; // Font Awesome
+    FaUserTimes, FaEdit
+} from "react-icons/fa";
+import EditLandingPage from "./EditLandingPage.jsx"; // Font Awesome
 
 const AdminDashboard = () => {
     const [activeSection, setActiveSection] = useState('viewLandingPage'); // القسم النشط
@@ -251,7 +252,7 @@ const AdminDashboard = () => {
                     axios.get("http://localhost:8000/api/blogs"),
                     axios.get("http://localhost:8000/api/features"),
                     axios.get("http://localhost:8000/api/social"),
-                    axios.get("http://localhost:8000/api/fastlinks")
+                    axios.get("http://localhost:8000/api/fastlink")
                 ]);
 
                 setSettings(settingsRes.data);
@@ -315,8 +316,8 @@ const AdminDashboard = () => {
                         معلومات التواصل
                     </li>
                     <li className={`cursor-pointer flex items-center justify-center hover:underline mb-6 ${activeSection === 'editPage' ? 'font-bold' : ''}`} onClick={() => setActiveSection('editPage')}>
-                        <FaPhone className="ml-2" />
-                        معلومات التواصل
+                        <FaEdit className="ml-2" />
+                        تعديل صفحة الهبوط
                     </li>
                 </ul>
             </aside>
@@ -344,7 +345,11 @@ const AdminDashboard = () => {
                             </form>
                         </div>
                     )}
-
+                    {activeSection === 'editPage' && (
+                        <div className="m-6">
+                            <EditLandingPage />
+                        </div>
+                    )}
                     {activeSection === 'social' && (
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h2 className="text-xl font-bold mb-4">إضافة رقم تواصل</h2>

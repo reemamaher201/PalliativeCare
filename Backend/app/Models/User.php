@@ -40,6 +40,10 @@ class User extends Authenticatable implements JWTSubject
         'phoneNumber_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    public function username()
+    {
+        return 'identity_number';
+    }
 
     public function getJWTIdentifier()
     {

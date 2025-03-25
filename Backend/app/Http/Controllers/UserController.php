@@ -100,7 +100,16 @@ class UserController extends Controller
     public function dashboardM(): JsonResponse
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $token = JWTAuth::getToken();
+            if (!$token) {
+                return response()->json(['error' => 'Token not provided'], 401);
+            }
+
+            $user = JWTAuth::authenticate($token);
+            if (!$user) {
+                return response()->json(['error' => 'Unauthorized: Invalid token or user not found'], 401);
+            }
+
             if ($user->user_type !== User::USER_TYPE_MINISTRY) {
                 return response()->json(['error' => 'Unauthorized: User type mismatch'], 403);
             }
@@ -113,19 +122,20 @@ class UserController extends Controller
                 'min' => $min,
             ]);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            Log::error('JWT Token Expired: ' . $e->getMessage());
-            return response()->json(['error' => 'Token Expired'], 401);
+            return response()->json(['error' => 'Token Expired, please login again'], 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            Log::error('JWT Token Invalid: ' . $e->getMessage());
-            return response()->json(['error' => 'Token Invalid'], 401);
+            return response()->json(['error' => 'Invalid Token, authentication failed'], 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenBlacklistedException $e) {
-            Log::error('JWT Token Blacklisted: ' . $e->getMessage());
-            return response()->json(['error' => 'Token Blacklisted'], 401);
+            return response()->json(['error' => 'Token Blacklisted, please login again'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json(['error' => 'Token not provided or invalid'], 401);
         } catch (\Exception $e) {
-            Log::error('Error in dashboardM: ' . $e->getMessage());
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
+
+
+
 
     public function me(): JsonResponse
     {

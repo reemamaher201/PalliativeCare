@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 // Routes المصادقة (لا تتطلب تسجيل الدخول)
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
-Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
 
 // Routes العامة (لا تتطلب تسجيل الدخول)
 Route::get('/show', [SettingController::class, 'show']);
