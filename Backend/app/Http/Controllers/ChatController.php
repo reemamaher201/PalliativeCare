@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ChatController extends Controller
 {
@@ -18,14 +17,19 @@ class ChatController extends Controller
             'message' => 'required|string',
         ]);
 
-        // التحقق من أن المستخدم المرسل إليه نشط
+        $user = JWTAuth::parseToken()->authenticate();
         $receiver = User::find($request->receiver_id);
+
         if (!$receiver) {
             return response()->json(['error' => 'المستخدم غير موجود'], 404);
         }
 
+        if (!$this->isValidChat($user, $receiver)) {
+            return response()->json(['error' => 'غير مسموح بالدردشة مع هذا المستخدم'], 403);
+        }
+
         $message = Message::create([
-            'sender_id' => Auth::id(),
+            'sender_id' => $user->id,
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
         ]);
@@ -36,57 +40,76 @@ class ChatController extends Controller
     // الحصول على الرسائل بين مستخدمين
     public function getMessages($receiverId)
     {
-        // التحقق من أن المستخدم المرسل إليه موجود
+        $user = JWTAuth::parseToken()->authenticate();
         $receiver = User::find($receiverId);
+
         if (!$receiver) {
             return response()->json(['error' => 'المستخدم غير موجود'], 404);
         }
 
-        // استرجاع الرسائل بين المستخدمين
-        $messages = Message::where(function ($query) use ($receiverId) {
-            $query->where('sender_id', Auth::id())
+        if (!$this->isValidChat($user, $receiver)) {
+            return response()->json(['error' => 'غير مسموح بمشاهدة هذه المحادثة'], 403);
+        }
+
+        $messages = Message::where(function ($query) use ($user, $receiverId) {
+            $query->where('sender_id', $user->id)
                 ->where('receiver_id', $receiverId);
-        })->orWhere(function ($query) use ($receiverId) {
+        })->orWhere(function ($query) use ($user, $receiverId) {
             $query->where('sender_id', $receiverId)
-                ->where('receiver_id', Auth::id());
+                ->where('receiver_id', $user->id);
         })->orderBy('created_at', 'asc')->get();
 
         return response()->json(['messages' => $messages], 200);
     }
 
-    // الحصول على قائمة المستخدمين للدردشة مع حالة الاتصال
+    // get users with the online status
     public function getChatUsers()
     {
-        // استرجاع جميع المستخدمين ما عدا المستخدم الحالي
-        $users = User::where('id', '!=', Auth::id())->get();
+        $user = JWTAuth::parseToken()->authenticate();
 
-        // إضافة حالة الاتصال (أونلاين/أوفلاين) لكل مستخدم
-        $users->each(function ($user) {
-            $user->is_online = Cache::has('user-is-online-' . $user->id);
-        });
+        $query = User::where('id', '!=', $user->id)
+            ->where('user_type', '!=', 3);
+
+        if ($user->user_type == 2) {
+            $query->whereIn('user_type', [0, 1]);
+        }
+
+        $users = $query->get(['id', 'name', 'user_type', 'is_active']);
 
         return response()->json(['users' => $users], 200);
     }
 
-    // تحديث حالة المستخدم إلى أونلاين
-    public function setUserOnline(Request $request)
+    // تحديث حالة المستخدم إلى نشط
+    public function setUserActive(Request $request)
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $user->is_active = true;
         $user->save();
-        Cache::put('user-is-online-' . $user->id, true, now()->addMinutes(5)); // تحديث حالة الاتصال لمدة 5 دقائق
 
-        return response()->json(['message' => 'تم تحديث الحالة إلى أونلاين'], 200);
+        return response()->json(['message' => 'تم تحديث الحالة إلى نشط'], 200);
     }
 
-// تحديث حالة المستخدم إلى أوفلاين
-    public function setUserOffline(Request $request)
+    // تحديث حالة المستخدم إلى غير نشط
+    public function setUserInactive(Request $request)
     {
-        $user = Auth::user();
+        $user = JWTAuth::parseToken()->authenticate();
         $user->is_active = false;
         $user->save();
-        Cache::forget('user-is-online-' . $user->id); // إزالة حالة الاتصال
 
-        return response()->json(['message' => 'تم تحديث الحالة إلى أوفلاين'], 200);
+        return response()->json(['message' => 'تم تحديث الحالة إلى غير نشط'], 200);
+    }
+
+    // دالة مساعدة للتحقق من صلاحية المحادثة
+    private function isValidChat($sender, $receiver)
+    {
+        if ($receiver->user_type == 3) {
+            return false;
+        }
+
+        if ($sender->user_type == 2 && !in_array($receiver->user_type, [0, 1])) {
+            return false;
+        }
+
+        return true;
     }
 }

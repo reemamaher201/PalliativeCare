@@ -15,6 +15,7 @@
         "vite": "^6.0.11"
     },
     "dependencies": {
+        "@heroicons/react": "^2.2.0",
         "laravel-echo": "^2.0.2",
         "pusher-js": "^8.4.0",
         "socket.io": "^4.8.1",

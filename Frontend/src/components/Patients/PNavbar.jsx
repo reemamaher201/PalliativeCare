@@ -21,11 +21,7 @@ const Navbar = ({ onLogout }) => {
                             الدعم النفسي
                         </a>
                     </li>
-                    <li>
-                        <a href="#" className="hover:underline">
-                            إعدادات الحساب
-                        </a>
-                    </li>
+
                 </ul>
 
                 {/* الأيقونات */}

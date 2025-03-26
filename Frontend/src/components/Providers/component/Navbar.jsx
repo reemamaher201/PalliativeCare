@@ -46,22 +46,16 @@ const Navbar = () => {
             {/* اسم المزود */}
             <h1 className="text-xl font-bold">{providerName}</h1>
 
-            {/* الأيقونات والبيانات الشخصية */}
-            <div className="flex items-center space-x-4 space-x-reverse">
-                {/* أيقونة تسجيل الخروج */}
-                <button className="text-blue-500 hover:text-blue-700">
-                    <i className="fas fa-sign-out-alt text-xl"></i>
-                </button>
-                {/* أيقونة الإشعارات */}
-                <button className="relative text-blue-500 hover:text-blue-700">
-                    <i className="fas fa-bell text-xl"></i>
-                    <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center"></span>
-                </button>
-                {/* أيقونة الرسائل */}
-                <button className="text-blue-500 hover:text-blue-700">
-                    <i className="fas fa-comment-dots text-xl"></i>
-                </button>
-            </div>
+
+                <div className="flex items-center gap-4">
+                    <button className="text-blue-500 hover:text-blue-700">
+                        <i className="fas fa-sign-out-alt text-xl"></i>
+                    </button>
+                    <button className="text-blue-500 hover:text-blue-700">
+                        <i className="fas fa-comment-dots text-xl"></i>
+                    </button>
+                </div>
+
         </header>
     );
 };

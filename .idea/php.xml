@@ -136,6 +136,18 @@
       <path value="$PROJECT_DIR$/Backend/vendor/predis/predis" />
       <path value="$PROJECT_DIR$/Backend/vendor/pusher/pusher-php-server" />
       <path value="$PROJECT_DIR$/Backend/vendor/paragonie/sodium_compat" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/dns" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/cache" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/promise" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/event-loop" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/socket" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/promise-timer" />
+      <path value="$PROJECT_DIR$/Backend/vendor/clue/redis-protocol" />
+      <path value="$PROJECT_DIR$/Backend/vendor/react/stream" />
+      <path value="$PROJECT_DIR$/Backend/vendor/ratchet/rfc6455" />
+      <path value="$PROJECT_DIR$/Backend/vendor/clue/redis-react" />
+      <path value="$PROJECT_DIR$/Backend/vendor/laravel/reverb" />
+      <path value="$PROJECT_DIR$/Backend/vendor/evenement/evenement" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />

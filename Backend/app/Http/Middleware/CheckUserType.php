@@ -13,14 +13,13 @@ class CheckUserType
     public function handle(Request $request, Closure $next, string $type): Response
     {
         try {
-            // الحصول على المستخدم من التوكن
+           //get user from token
             $user = JWTAuth::parseToken()->authenticate();
 
             if (!$user) {
                 return response()->json(['error' => 'Unauthorized: User not authenticated'], 401);
             }
-
-            // تحويل نوع المستخدم المدخل إلى ثابت
+// to show the type of user
             $userTypeConstant = constant("App\Models\User::USER_TYPE_" . strtoupper($type));
 
             if ($user->user_type === $userTypeConstant) {

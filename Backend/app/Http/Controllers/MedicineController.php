@@ -17,8 +17,6 @@ class MedicineController extends Controller
         DB::beginTransaction();
         try {
             $user = JWTAuth::parseToken()->authenticate();
-
-            // التحقق من نوع المستخدم (user_type)
             if ($user->user_type !== 0 && $user->user_type !== 1) {
                 return response()->json(['message' => 'ليس لديك صلاحية إضافة دواء.'], 403);
             }
@@ -60,7 +58,7 @@ class MedicineController extends Controller
             $user = JWTAuth::parseToken()->authenticate();
 
             // التحقق من نوع المستخدم (user_type)
-            if ($user->user_type !== User::USER_TYPE_MINISTRY && $user->user_type !== User::USER_TYPE_PROVIDER) {
+            if ($user->user_type !== User::USER_TYPE_MINISTRY && $user->user_type !== User::USER_TYPE_PROVIDER && $user->user_type !== User::USER_TYPE_PATIENT) {
                 return response()->json(['message' => 'ليس لديك صلاحية عرض الأدوية.'], 403);
             }
 

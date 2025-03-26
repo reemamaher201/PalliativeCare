@@ -16,9 +16,9 @@ class Medicine extends Model
         'required_quantity',
         'locations',
         'next_distribution_date',
-        'type', // إضافة العمود type
+        'type',
         'add_by',
-        'delete_status', // إضافة العمود الجديد
+        'delete_status',
         'edit_status',
     ];
 
