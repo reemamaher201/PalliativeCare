@@ -26,4 +26,9 @@ class Medicine extends Model
     {
         return $this->belongsTo(User::class, 'add_by');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(MedicineBooking::class);
+    }
 }

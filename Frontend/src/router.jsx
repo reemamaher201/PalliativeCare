@@ -24,11 +24,16 @@ import ReqAddMed from "./components/Providers/ReqAddMed.jsx";
 import MedRequestDetails from "./components/Ministry/MedRequestDetails.jsx";
 import ProviderMedicines from "./components/Providers/ProviderMedicines.jsx";
 import ChatPage from "./components/Ministry/Chat.jsx";
+import GeneralAdvice from "./components/Patients/GeneralAdvice.jsx";
+import Support from "./components/Patients/Support.jsx";
+import MedicineBookings from "./components/Patients/MedicineBookings.jsx";
 
 const RouterComponent = () => {
     return (
         <Routes>
 
+            <Route path="/generalAdvice" element={<GeneralAdvice />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/" element={<LandingPage />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
@@ -42,7 +47,7 @@ const RouterComponent = () => {
             <Route path={"/provider/patients"} element={<ProviderPatients/>}/>
                 <Route path={"/provider/medicines"} element={<ProviderMedicines/>}/>
             <Route path="/chat" element={<ChatPage />}/>
-
+<Route path="/showmybooking" element={<MedicineBookings/>}/>
 
             <Route path={"/admin-dashboard"} element={<AdminDashboard/>} />
 
@@ -87,8 +92,8 @@ const RouterComponent = () => {
                 element={<CreateNotification/>} />
 
             <Route
-                path="/dashboardS"
-                 element={<DashboardS/>} />
+                path="/dashboardS" element={<DashboardS/>} />
+
                 <Route path="/showrequests" element={<ShowRequests/>} />
 
                 {/* صفحة 404 */}

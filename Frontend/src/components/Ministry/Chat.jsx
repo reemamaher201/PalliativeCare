@@ -3,6 +3,7 @@ import axios from "axios";
 import Header from "./comp/Header.jsx";
 import Sidebar from "./comp/Sidebar.jsx";
 import { BeatLoader } from 'react-spinners';
+import Navbar from "../Patients/PNavbar.jsx";
 
 const ChatPage = () => {
     const [users, setUsers] = useState([]);
@@ -17,7 +18,25 @@ const ChatPage = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [otherUserTyping, setOtherUserTyping] = useState(false);
     const typingTimeoutRef = useRef(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [isUserLoading, setIsUserLoading] = useState(true);
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://127.0.0.1:8000/api/user-profile', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setCurrentUser(response.data);
+            } catch (error) {
+                console.error('Error fetching current user:', error);
+            } finally {
+                setIsUserLoading(false); // إنهاء التحميل بعد جلب البيانات
+            }
+        };
 
+        fetchCurrentUser();
+    }, []);
     useEffect(() => {
         const fetchUsers = async () => {
             setIsLoading(true);
@@ -160,16 +179,26 @@ const ChatPage = () => {
             return [];
         }
     };
+    const isPatient = currentUser?.user_type === 2; // تحقق إذا كان المستخدم الحالي مريضاً
+
 
     return (
         <div dir="rtl" className="h-screen flex flex-col overflow-hidden">
-            <div className="flex flex-1 min-h-0">
-                <Sidebar className="overflow-y-auto"/>
+            {isUserLoading ? (
+                // عرض شاشة تحميل حتى يتم جلب بيانات المستخدم
+                <div className="flex items-center justify-center h-full">
+                    <BeatLoader size={15} color="#06b6d4" />
+                </div>
+            ) : (
+                <div className="flex flex-1 min-h-0">
+                    {/* عرض Sidebar فقط لغير المرضى */}
+                    {!isPatient && <Sidebar className="overflow-y-auto" />}
 
-                <div className="flex flex-col flex-1 min-h-0">
-                    <Header className="shrink-0"/>
+                    <div className="flex flex-col flex-1 min-h-0">
+                        {/* عرض Navbar للمريض فقط، و Header لغير المرضى */}
+                        {isPatient ? <Navbar /> : <Header className="shrink-0" />}
 
-                    <div className="flex flex-1 min-h-0 overflow-hidden">
+                        <div className="flex flex-1 min-h-0 overflow-hidden">
                         {/* قائمة المستخدمين */}
                         <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4 shadow-md overflow-y-auto">
                             <div className="relative mb-4">
@@ -338,6 +367,9 @@ const ChatPage = () => {
                     </div>
                 </div>
             </div>
+
+                )}
+
         </div>
     );
 };

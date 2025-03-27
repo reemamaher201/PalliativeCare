@@ -9,13 +9,39 @@ import FeaturesSection from "./FeaturesSection.jsx";
 import { FaNewspaper } from "react-icons/fa";
 
 function LandingPage() {
-    const [settings, setSettings] = useState(null);
-    const [sections, setSections] = useState([]);
-    const [services, setServices] = useState([]);
-    const [blogs, setBlogs] = useState([]);
-    const [features, setFeatures] = useState([]);
-    const [fastLinks, setFastLinks] = useState([]); // ✅ إضافة حالة للروابط السريعة
-    const [socialLinks, setSocialLinks] = useState([]); // ✅ إضافة حالة لروابط التواصل
+    const [settings, setSettings] = useState({
+        logo: "",
+        background_color: "#fff",
+        imgabout: "",
+        main_heading: "مرحباً بكم",
+        main_text: "نحن هنا لخدمتك",
+        footer_text: "جميع الحقوق محفوظة",
+        button_color: "#4CAF50",
+    });
+    const [sections, setSections] = useState([
+        { title: "قسم 1", content: "محتوى القسم 1", image: "" },
+        { title: "قسم 2", content: "محتوى القسم 2", image: "" },
+    ]);
+    const [services, setServices] = useState([
+        { title: "خدمة 1", description: "وصف الخدمة 1", image: "" },
+        { title: "خدمة 2", description: "وصف الخدمة 2", image: "" },
+    ]);
+    const [blogs, setBlogs] = useState([
+        { title: "تدوينة 1", content: "محتوى التدوينة 1", image: "" },
+        { title: "تدوينة 2", content: "محتوى التدوينة 2", image: "" },
+    ]);
+    const [features, setFeatures] = useState([
+        { title: "ميزة 1", description: "وصف الميزة 1", image: "" },
+        { title: "ميزة 2", description: "وصف الميزة 2", image: "" },
+    ]);
+    const [fastLinks, setFastLinks] = useState([
+        { title: "رابط سريع 1", url: "#" },
+        { title: "رابط سريع 2", url: "#" },
+    ]);
+    const [socialLinks, setSocialLinks] = useState([
+        { icon: "facebook", url: "#" },
+        { icon: "twitter", url: "#" },
+    ]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 

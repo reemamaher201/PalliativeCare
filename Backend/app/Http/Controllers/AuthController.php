@@ -10,148 +10,350 @@ use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use App\Notifications\EmailVerificationNotification;
 
 class AuthController extends Controller
 {
+    /**
+     * تسجيل مستخدم جديد
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'phoneNumber' => 'required|string|unique:users|regex:/^[0-9]+$/',
-            'identity_number' => 'required|string|unique:users|regex:/^[0-9]+$/',
-            'password' => 'required|string|min:8',
-            'address' => 'required|string',
-            'birth_date' => 'required|date',
-            'care_type' => 'required|string',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phoneNumber' => 'required|string|unique:users|regex:/^[0-9]+$/|min:10|max:15',
+            'identity_number' => 'required|string|unique:users|regex:/^[0-9]+$/|min:10|max:20',
+            'password' => 'required|string|min:8|confirmed',
+            'address' => 'required|string|max:500',
+            'birth_date' => 'required|date|before_or_equal:today',
+            'care_type' => 'required|string|max:255',
             'gender' => 'required|string|in:male,female',
-            'user_type' => 'integer|in:0,1,2,3',
-            'added_by' => 'nullable|integer',
+            'email' => 'nullable|email|unique:users',
+            'user_type' => 'sometimes|integer|in:0,1,2,3',
         ]);
 
-        // حساب العمر من تاريخ الميلاد
-        $birthDate = new \Carbon\Carbon($request->birth_date);
-        $age = $birthDate->diffInYears(\Carbon\Carbon::now());
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-        // إنشاء المستخدم
-        $user = User::create([
-            'name' => $request->name,
-            'phoneNumber' => $request->phoneNumber,
-            'identity_number' => $request->identity_number,
-            'password' => Hash::make($request->password),
-            'address' => $request->address,
-            'user_type' => User::USER_TYPE_PATIENT,
-        ]);
+        try {
+            // حساب العمر من تاريخ الميلاد
+            $age = Carbon::parse($request->birth_date)->age;
 
-        // إضافة بيانات المريض في جدول المرضى
-        Patient::create([
-            'identity_number' => $request->identity_number,
-            'name' => $request->name,
-            'phoneNumber' => $request->phoneNumber,
-            'address' => $request->address,
-            'birth_date' => $request->birth_date,
-            'age' => $age, // يتم حساب العمر هنا
-            'care_type' => $request->care_type,
-            'gender' => $request->gender,
-            'add_by' => $user->id,
-        ]);
+            // إنشاء المستخدم
+            $user = User::create([
+                'name' => $request->name,
+                'phoneNumber' => $request->phoneNumber,
+                'identity_number' => $request->identity_number,
+                'password' => Hash::make($request->password),
+                'address' => $request->address,
+                'user_type' => User::USER_TYPE_PATIENT,
+                'email' => $request->email,
+                'email_verification_token' => Str::random(60),
+                'is_active' => 0 // غير نشط حتى يتم التحقق
+            ]);
 
-        // إنشاء توكن JWT
-        $token = JWTAuth::fromUser($user);
+            // إضافة بيانات المريض
+            Patient::create([
+                'identity_number' => $request->identity_number,
+                'name' => $request->name,
+                'phoneNumber' => $request->phoneNumber,
+                'address' => $request->address,
+                'birth_date' => $request->birth_date,
+                'age' => $age,
+                'care_type' => $request->care_type,
+                'gender' => $request->gender,
+                'add_by' => $user->id,
+            ]);
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+            // إرسال بريد التحقق إذا كان البريد الإلكتروني موجودًا
+            if ($request->email) {
+                $user->notify(new EmailVerificationNotification($user->email_verification_token));
+            }
+
+            // إنشاء توكن JWT
+            $token = JWTAuth::fromUser($user);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User registered successfully. ' . ($request->email ? 'Please verify your email.' : ''),
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Registration error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Registration failed. Please try again.'
+            ], 500);
+        }
     }
+
+    /**
+     * تسجيل الدخول
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'identity_number' => 'required|string|regex:/^[0-9]+$/',
             'password' => 'required|string',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $credentials = $request->only('identity_number', 'password');
+        $ip = $request->ip();
+        $cacheKey = "login_attempts_{$ip}";
 
-        // Check failed attempts
-        $attempts = Cache::get("login_attempts_{$request->ip()}", 0);
-        if ($attempts >= 5) {
-            return response()->json(['error' => 'Too many login attempts. Please try again later.'], 429);
+        // Check rate limiting
+        if ($this->hasTooManyLoginAttempts($request)) {
+            $seconds = $this->availableIn($cacheKey);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Too many login attempts. Please try again in ' . $seconds . ' seconds.'
+            ], 429);
         }
 
-        if (!$token = JWTAuth::attempt($credentials)) {
-            // Increase the number of failed attempts
-            Cache::put("login_attempts_{$request->ip()}", $attempts + 1, 300); // 5 minutes
-            Log::error('Login failed: Invalid credentials for identity_number: ' . $request->identity_number); // تسجيل الخطأ
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        try {
+            if (!$token = JWTAuth::attempt($credentials)) {
+                $this->incrementLoginAttempts($request);
+
+                Log::warning('Failed login attempt for identity_number: ' . $request->identity_number);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+
+            $user = JWTAuth::user();
+
+            // التحقق من البريد الإلكتروني إذا كان موجودًا
+            if ($user->email && !$user->email_verified_at) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Email not verified. Please verify your email first.'
+                ], 403);
+            }
+
+            // Reset attempts
+            $this->clearLoginAttempts($request);
+
+            // تحديث حالة المستخدم
+            $user->update([
+                'is_active' => 1,
+                'last_login_at' => Carbon::now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful',
+                'data' => $this->prepareUserData($user, $token)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Login error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Login failed. Please try again.'
+            ], 500);
         }
-
-        // Reset attempts after successful login
-        Cache::forget("login_attempts_{$request->ip()}");
-
-        $user = JWTAuth::user();
-
-        Log::info('User login attempt: identity_number: ' . $user->identity_number . ', is_active: ' . $user->is_active); // تسجيل معلومات المستخدم
-
-        // تحديث حالة المستخدم إلى نشط
-        $user->is_active = 1;
-        $user->save();
-
-        // Update last login time
-        $user->last_login_at = Carbon::now();
-        $user->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Login successful',
-            'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'identity_number' => $user->identity_number,
-                    'name' => $user->name,
-                    'phoneNumber' => $user->phoneNumber,
-                    'phoneNumber_verified_at' => $user->phoneNumber_verified_at,
-                    'user_type' => $user->user_type,
-                    'address' => $user->address,
-                    'last_login_at' => $user->last_login_at->toDateTimeString(),
-                    'created_at' => $user->created_at->toDateTimeString(),
-                    'updated_at' => $user->updated_at->toDateTimeString(),
-                    'is_active' => $user->is_active,
-                ],
-                'token' => $token,
-                'expires_in' => config('jwt.ttl') * 60,
-            ],
-        ]);
     }
+
+    /**
+     * تجديد التوكن
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function refreshToken(Request $request)
     {
         try {
             if (!$token = JWTAuth::getToken()) {
-                return response()->json(['error' => 'Token not provided'], 401);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Token not provided'
+                ], 401);
             }
 
             $newToken = JWTAuth::refresh($token);
+
             return response()->json([
-                'token' => $newToken,
-                'expires_in' => config('jwt.ttl') * 60 // Token expiration time from the config
+                'status' => 'success',
+                'data' => [
+                    'token' => $newToken,
+                    'expires_in' => config('jwt.ttl') * 60
+                ]
             ]);
+
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            return response()->json(['error' => 'Token expired'], 401);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Token expired'
+            ], 401);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Unable to refresh token'], 401);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unable to refresh token'
+            ], 401);
         }
     }
 
+    /**
+     * تسجيل الخروج
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout()
     {
-        $token = JWTAuth::getToken();
+        try {
+            $token = JWTAuth::getToken();
 
-        if (!$token) {
-            return response()->json(['error' => 'User not logged in'], 400);
+            if (!$token) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not logged in'
+                ], 400);
+            }
+
+            $user = JWTAuth::user();
+            $user->update(['is_active' => 0]);
+
+            JWTAuth::invalidate($token);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Logout successful'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Logout failed'
+            ], 500);
         }
+    }
 
-        JWTAuth::invalidate($token);
+    /**
+     * التحقق من البريد الإلكتروني
+     *
+     * @param string $token
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyEmail($token)
+    {
+        try {
+            $user = User::where('email_verification_token', $token)->first();
 
-        return response()->json(['message' => 'Logout successful']);
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid verification token'
+                ], 404);
+            }
+
+            $user->update([
+                'email_verified_at' => Carbon::now(),
+                'email_verification_token' => null,
+                'is_active' => 1
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Email verified successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Email verification error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email verification failed'
+            ], 500);
+        }
+    }
+
+    /**
+     * إعداد بيانات المستخدم للاستجابة
+     *
+     * @param User $user
+     * @param string $token
+     * @return array
+     */
+    protected function prepareUserData(User $user, $token)
+    {
+        return [
+            'user' => [
+                'id' => $user->id,
+                'identity_number' => $user->identity_number,
+                'name' => $user->name,
+                'phoneNumber' => $user->phoneNumber,
+                'phoneNumber_verified_at' => $user->phoneNumber_verified_at,
+                'email' => $user->email,
+                'email_verified_at' => $user->email_verified_at,
+                'user_type' => $user->user_type,
+                'address' => $user->address,
+                'last_login_at' => $user->last_login_at ? $user->last_login_at->toDateTimeString() : null,
+                'created_at' => $user->created_at->toDateTimeString(),
+                'updated_at' => $user->updated_at->toDateTimeString(),
+                'is_active' => $user->is_active,
+            ],
+            'token' => $token,
+            'expires_in' => config('jwt.ttl') * 60,
+        ];
+    }
+
+    /**
+     * Rate Limiting Functions
+     */
+    protected function hasTooManyLoginAttempts(Request $request)
+    {
+        $maxAttempts = 5; // عدد المحاولات المسموحة
+        $decayMinutes = 15; // دقائق الحظر بعد تجاوز الحد
+
+        return Cache::has($this->throttleKey($request)) &&
+            Cache::get($this->throttleKey($request)) >= $maxAttempts;
+    }
+
+    protected function incrementLoginAttempts(Request $request)
+    {
+        $key = $this->throttleKey($request);
+        $decayMinutes = 15;
+
+        Cache::add($key, 0, $decayMinutes * 60);
+        Cache::increment($key);
+    }
+
+    protected function clearLoginAttempts(Request $request)
+    {
+        Cache::forget($this->throttleKey($request));
+    }
+
+    protected function availableIn($key)
+    {
+        return Cache::has($key) ? Cache::get($key) : 0;
+    }
+
+    protected function throttleKey(Request $request)
+    {
+        return 'login_attempts_' . $request->ip() . '|' . $request->identity_number;
     }
 }

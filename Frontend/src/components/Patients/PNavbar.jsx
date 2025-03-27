@@ -7,18 +7,23 @@ const Navbar = ({ onLogout }) => {
                 {/* الروابط */}
                 <ul className="flex space-x-6">
                     <li>
-                        <a href="#" className="hover:underline">
+                        <a href="/user-profile" className="hover:underline">
                             حسابي
                         </a>
                     </li>
                     <li>
-                        <a href="#" className="hover:underline">
+                        <a href="/generalAdvice" className="hover:underline">
                             نصائح عامة
                         </a>
                     </li>
                     <li>
-                        <a href="#" className="hover:underline">
+                        <a href="/support" className="hover:underline">
                             الدعم النفسي
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/showmybooking" className="hover:underline">
+                            حجوزات الدواء
                         </a>
                     </li>
 
@@ -26,13 +31,11 @@ const Navbar = ({ onLogout }) => {
 
                 {/* الأيقونات */}
                 <div className="flex items-center space-x-6">
-                    <a href="#" className="text-lg">
+                    <a href="/chat" className="text-lg">
                         <i className="fas fa-comment"></i>
                     </a>
-                    <a href="#" className="text-lg">
-                        <i className="fas fa-bell"></i>
-                    </a>
-                    <button onClick={onLogout} className="text-lg">
+
+                    <button onClick={logout} className="text-lg">
                         <i className="fas fa-sign-out-alt"></i>
                     </button>
                 </div>

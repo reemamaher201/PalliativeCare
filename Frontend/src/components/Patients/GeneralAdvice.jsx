@@ -53,10 +53,11 @@ const GeneralAdvice = () => {
                                 YouTube and Vimeo...
                             </h4>
                             <div className="relative mb-4">
-                                <iframe className="w-full h-40 rounded-lg"
-                                        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                                        title="YouTube video"
-                                        allowFullScreen
+                                <iframe
+                                    className="w-full h-40 rounded-lg"
+                                    src="https://www.youtube.com/embed/eAIDrNb_crs"  // Update to embed URL
+                                    title="YouTube video"
+                                    allowFullScreen
                                 ></iframe>
                             </div>
                             <p dir={"rtl"} className="text-gray-700">

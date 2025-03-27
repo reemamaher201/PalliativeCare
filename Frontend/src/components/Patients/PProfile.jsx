@@ -5,6 +5,8 @@ import Navbar from "./pNavbar.jsx";
 import errorGif from '../../assets/Mobile Login.gif';
 import ChatButton from "../Utilties/ChatButton.jsx";
 import { PencilSquareIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 
 const UserProfile = () => {
     const [userData, setUserData] = useState(null);
@@ -13,6 +15,12 @@ const UserProfile = () => {
     const [error, setError] = useState("");
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+    const [selectedMedicine, setSelectedMedicine] = useState(null);
+    const [requestQuantity, setRequestQuantity] = useState(1);
+    const [requestNotes, setRequestNotes] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,7 +65,7 @@ const UserProfile = () => {
                 const medicinesResponse = await axios.get("http://127.0.0.1:8000/api/showmedicines", {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setMedicines(medicinesResponse.data.medicines || []); // تعديل هنا
+                setMedicines(medicinesResponse.data.medicines || []);
 
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -132,8 +140,37 @@ const UserProfile = () => {
         setIsEditing(false);
     };
 
-    const handleMedicineRequest = (medicineId) => {
-        navigate(`/request-medicine/${medicineId}`);
+    const handleSubmitBooking = async () => {
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem("token");
+            await axios.post(
+                "http://127.0.0.1:8000/api/medicine-bookings",
+                {
+                    medicine_id: selectedMedicine.id,
+                    quantity: requestQuantity,
+                    notes: requestNotes
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            // Redirect to bookings page with success message
+            navigate('/medicine-bookings?success=تم تقديم طلب الحجز بنجاح وهو قيد المراجعة');
+
+        } catch (error) {
+            console.error("فشل في حجز الدواء:", error);
+            alert(error.response?.data?.message || "حدث خطأ أثناء محاولة الحجز");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+// دالة لفتح المودال
+    const handleMedicineBooking = (medicine) => {
+        setSelectedMedicine(medicine);
+        setRequestQuantity(1);
+        setRequestNotes('');
+        setIsBookingModalOpen(true);
     };
 
     if (loading) {
@@ -189,7 +226,6 @@ const UserProfile = () => {
                         </button>
                     )}
                     <h1 className="text-2xl font-bold text-cyan-700">الملف الشخصي</h1>
-
                 </div>
 
                 {/* Profile Sections */}
@@ -257,14 +293,15 @@ const UserProfile = () => {
                                     </div>
 
                                     <div className="mt-4 flex justify-between items-center">
-          <span className="text-xs text-gray-500">
-            {new Date(medicine.created_at).toLocaleDateString()}
-          </span>
+                                        <span className="text-xs text-gray-500">
+                                            {new Date(medicine.created_at).toLocaleDateString()}
+                                        </span>
                                         <button
-                                            onClick={() => handleMedicineRequest(medicine.id)}
-                                            className="bg-cyan-700 hover:bg-cyan-600 text-white py-1 px-3 rounded text-sm"
+                                            onClick={() => handleMedicineBooking(medicine)}
+                                            className="bg-cyan-600 text-white px-3 py-1 rounded text-sm hover:bg-cyan-700"
+                                            disabled={!medicine.distributed_quantity}
                                         >
-                                            طلب الدواء
+                                            {medicine.distributed_quantity ? "حجز الدواء" : "غير متوفر"}
                                         </button>
                                     </div>
                                 </div>
@@ -280,6 +317,106 @@ const UserProfile = () => {
                     )}
                 </div>
             </div>
+
+            <Transition appear show={isBookingModalOpen} as={Fragment}>
+                <Dialog as="div" className="relative z-50" onClose={() => setIsBookingModalOpen(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-right shadow-xl transition-all">
+                                    <Dialog.Title as="h3" className="text-lg font-bold text-gray-900 border-b pb-3">
+                                        <div className="flex items-center justify-between">
+                                            <span>حجز دواء: {selectedMedicine?.name}</span>
+                                            <button
+                                                onClick={() => setIsBookingModalOpen(false)}
+                                                className="text-gray-500 hover:text-gray-700"
+                                            >
+                                                <XMarkIcon className="h-5 w-5" />
+                                            </button>
+                                        </div>
+                                    </Dialog.Title>
+
+                                    <div className="mt-4 space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">الكمية المطلوبة</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={selectedMedicine?.distributed_quantity}
+                                                value={requestQuantity}
+                                                onChange={(e) => {
+                                                    const value = Math.min(
+                                                        Number(e.target.value),
+                                                        selectedMedicine?.distributed_quantity || 1
+                                                    );
+                                                    setRequestQuantity(value > 0 ? value : 1);
+                                                }}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                                placeholder=""
+                                            />
+                                            <div className="text-sm text-gray-500 mt-1">
+                                                الكمية المتاحة: {selectedMedicine?.distributed_quantity}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">ملاحظات (اختياري)</label>
+                                            <textarea
+                                                value={requestNotes}
+                                                onChange={(e) => setRequestNotes(e.target.value)}
+                                                rows={3}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                                placeholder="أي ملاحظات إضافية تريد إضافتها..."
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2">
+                                            <div className="text-sm text-gray-500">سيتم مراجعة حجزك خلال 24 ساعة</div>
+                                            <div className="flex space-x-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsBookingModalOpen(false)}
+                                                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+                                                >
+                                                    إلغاء
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSubmitBooking}
+                                                    disabled={!selectedMedicine || isSubmitting}
+                                                    className={`px-4 py-2 bg-cyan-600 rounded-md text-sm font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${(!selectedMedicine || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                >
+                                                    {isSubmitting ? 'جاري المعالجة...' : 'تأكيد الحجز'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
 
             <ChatButton />
         </div>

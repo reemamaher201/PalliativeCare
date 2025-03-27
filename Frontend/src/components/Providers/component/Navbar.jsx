@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {logout} from "../../../services/Auth/auth.jsx";
 
 const Navbar = () => {
     const [error, setError] = useState("");
@@ -48,12 +49,12 @@ const Navbar = () => {
 
 
                 <div className="flex items-center gap-4">
-                    <button className="text-blue-500 hover:text-blue-700">
+                    <button onClick={logout} className="text-cyan-500 hover:text-cyan-700">
                         <i className="fas fa-sign-out-alt text-xl"></i>
                     </button>
-                    <button className="text-blue-500 hover:text-blue-700">
-                        <i className="fas fa-comment-dots text-xl"></i>
-                    </button>
+                    <a href="/chat" className="text-lg text-cyan-500 hover:text-cyan-700">
+                        <i className="fas fa-comment"></i>
+                    </a>
                 </div>
 
         </header>

@@ -6,6 +6,7 @@ import Sidebar from "./comp/Sidebar.jsx";
 import errorGif from "../../assets/Mobile login.gif";
 import { useNavigate } from 'react-router-dom';
 import {logout} from "../../services/Auth/auth.jsx";
+import Header from "./comp/Header.jsx";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -131,20 +132,12 @@ const DashboardM = () => {
     return (
         <div dir={"rtl"} className="flex min-h-screen bg-gray-100">
             <Sidebar />
-            <main className="flex-1 p-6">
-                <header className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-bold">{userData.min || "اسم المستخدم"}</h1>
-                    <div className="flex space-x-4 space-x-reverse">
-                        <i className="fas fa-bell text-gray-500 text-lg cursor-pointer"></i>
-                        <i className="fas fa-envelope text-gray-500 text-lg cursor-pointer"></i>
-                    </div>
-                </header>
+            <main className="flex-1 ">
+               <Header/>
 
 
 
-                <button onClick={logout}>
-                تسجيل الخروج
-            </button>
+
 
 
 
@@ -161,82 +154,82 @@ const DashboardM = () => {
                     </div>
                 </section>
 
-                <section className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-700 mb-4">الأدوية المتوفرة حاليا</h3>
-                    <div className="overflow-x-auto"> {/* إضافة شريط تمرير أفقي للجداول الكبيرة */}
-                        <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg">
-                            <thead>
-                            <tr className="bg-gray-200">
-                                <th className="px-4 py-2 text-right">الدواء</th>
-                                <th className="px-4 py-2 text-right">الكمية</th>
-                                <th className="px-4 py-2 text-right">المناطق المتوفرة</th>
-                                <th className="px-4 py-2 text-right">تعديل</th>
-                                <th className="px-4 py-2 text-right">حذف</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {userData.availableMedicines && userData.availableMedicines.map(medicine => (
-                                <tr key={medicine.id} className="border-b hover:bg-gray-50"> {/* إضافة تأثير التمرير */}
-                                    <td className="px-4 py-2 text-right">{medicine.name}</td>
-                                    <td className="px-4 py-2 text-right">{medicine.quantity}</td>
-                                    <td className="px-4 py-2 text-right">{medicine.availableAreas.join(", ")}</td>
-                                    <td className="px-4 py-2 text-right">
-                                        <button className="text-cyan-700 hover:text-cyan-900"> {/* تحويل الأيقونة إلى زر */}
-                                            <i className="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                    <td className="px-4 py-2 text-right">
-                                        <button className="text-red-500 hover:text-red-700"> {/* تحويل الأيقونة إلى زر */}
-                                            <i className="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                {/*<section className="mb-6">*/}
+                {/*    <h3 className="text-lg font-bold text-gray-700 mb-4">الأدوية المتوفرة حاليا</h3>*/}
+                {/*    <div className="overflow-x-auto"> /!* إضافة شريط تمرير أفقي للجداول الكبيرة *!/*/}
+                {/*        <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg">*/}
+                {/*            <thead>*/}
+                {/*            <tr className="bg-gray-200">*/}
+                {/*                <th className="px-4 py-2 text-right">الدواء</th>*/}
+                {/*                <th className="px-4 py-2 text-right">الكمية</th>*/}
+                {/*                <th className="px-4 py-2 text-right">المناطق المتوفرة</th>*/}
+                {/*                <th className="px-4 py-2 text-right">تعديل</th>*/}
+                {/*                <th className="px-4 py-2 text-right">حذف</th>*/}
+                {/*            </tr>*/}
+                {/*            </thead>*/}
+                {/*            <tbody>*/}
+                {/*            {userData.availableMedicines && userData.availableMedicines.map(medicine => (*/}
+                {/*                <tr key={medicine.id} className="border-b hover:bg-gray-50"> /!* إضافة تأثير التمرير *!/*/}
+                {/*                    <td className="px-4 py-2 text-right">{medicine.name}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">{medicine.quantity}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">{medicine.availableAreas.join(", ")}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">*/}
+                {/*                        <button className="text-cyan-700 hover:text-cyan-900"> /!* تحويل الأيقونة إلى زر *!/*/}
+                {/*                            <i className="fas fa-edit"></i>*/}
+                {/*                        </button>*/}
+                {/*                    </td>*/}
+                {/*                    <td className="px-4 py-2 text-right">*/}
+                {/*                        <button className="text-red-500 hover:text-red-700"> /!* تحويل الأيقونة إلى زر *!/*/}
+                {/*                            <i className="fas fa-trash"></i>*/}
+                {/*                        </button>*/}
+                {/*                    </td>*/}
+                {/*                </tr>*/}
+                {/*            ))}*/}
+                {/*            </tbody>*/}
+                {/*        </table>*/}
+                {/*    </div>*/}
+                {/*</section>*/}
 
-                <section>
-                    <h3 className="text-lg font-bold text-gray-700 mb-4">الحالات الطارئة</h3>
-                    <div className="overflow-x-auto"> {/* إضافة شريط تمرير أفقي للجداول الكبيرة */}
-                        <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg">
-                            <thead>
-                            <tr className="bg-gray-200">
-                                <th className="px-4 py-2 text-right">المريض</th>
-                                <th className="px-4 py-2 text-right">المرض</th>
-                                <th className="px-4 py-2 text-right">نوع الحالة</th>
-                                <th className="px-4 py-2 text-right">حالة الطلب</th>
-                                <th className="px-4 py-2 text-right">منطقة السكن</th>
-                                <th className="px-4 py-2 text-right">حذف</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {userData.emergencyCases && userData.emergencyCases.map(caseItem => (
-                                <tr key={caseItem.id} className="border-b hover:bg-gray-50"> {/* إضافة تأثير التمرير */}
-                                    <td className="px-4 py-2 text-right">{caseItem.patientName}</td>
-                                    <td className="px-4 py-2 text-right">{caseItem.disease}</td>
-                                    <td className="px-4 py-2 text-right">{caseItem.caseType}</td>
-                                    <td className="px-4 py-2 text-right">{caseItem.requestStatus}</td>
-                                    <td className="px-4 py-2 text-right">{caseItem.residenceArea}</td>
-                                    <td className="px-4 py-2 text-right">
-                                        <button className="text-red-500 hover:text-red-700"> {/* تحويل الأيقونة إلى زر */}
-                                            <i className="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                {/*<section>*/}
+                {/*    <h3 className="text-lg font-bold text-gray-700 mb-4">الحالات الطارئة</h3>*/}
+                {/*    <div className="overflow-x-auto"> /!* إضافة شريط تمرير أفقي للجداول الكبيرة *!/*/}
+                {/*        <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg">*/}
+                {/*            <thead>*/}
+                {/*            <tr className="bg-gray-200">*/}
+                {/*                <th className="px-4 py-2 text-right">المريض</th>*/}
+                {/*                <th className="px-4 py-2 text-right">المرض</th>*/}
+                {/*                <th className="px-4 py-2 text-right">نوع الحالة</th>*/}
+                {/*                <th className="px-4 py-2 text-right">حالة الطلب</th>*/}
+                {/*                <th className="px-4 py-2 text-right">منطقة السكن</th>*/}
+                {/*                <th className="px-4 py-2 text-right">حذف</th>*/}
+                {/*            </tr>*/}
+                {/*            </thead>*/}
+                {/*            <tbody>*/}
+                {/*            {userData.emergencyCases && userData.emergencyCases.map(caseItem => (*/}
+                {/*                <tr key={caseItem.id} className="border-b hover:bg-gray-50"> /!* إضافة تأثير التمرير *!/*/}
+                {/*                    <td className="px-4 py-2 text-right">{caseItem.patientName}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">{caseItem.disease}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">{caseItem.caseType}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">{caseItem.requestStatus}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">{caseItem.residenceArea}</td>*/}
+                {/*                    <td className="px-4 py-2 text-right">*/}
+                {/*                        <button className="text-red-500 hover:text-red-700"> /!* تحويل الأيقونة إلى زر *!/*/}
+                {/*                            <i className="fas fa-trash"></i>*/}
+                {/*                        </button>*/}
+                {/*                    </td>*/}
+                {/*                </tr>*/}
+                {/*            ))}*/}
+                {/*            </tbody>*/}
+                {/*        </table>*/}
+                {/*    </div>*/}
+                {/*</section>*/}
 
-                <section className="mt-8">
-                    <h3 className="text-lg font-bold text-gray-700 mb-4">الحالات حسب المنطقة</h3>
-                    <div className="w-full h-96">
-                        <Bar data={barData} />
-                    </div>
-                </section>
+                {/*<section className="mt-8">*/}
+                {/*    <h3 className="text-lg font-bold text-gray-700 mb-4">الحالات حسب المنطقة</h3>*/}
+                {/*    <div className="w-full h-96">*/}
+                {/*        <Bar data={barData} />*/}
+                {/*    </div>*/}
+                {/*</section>*/}
             </main>
         </div>
     );

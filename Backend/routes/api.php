@@ -6,6 +6,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FeaturesController;
 use App\Http\Controllers\FooterController;
+use App\Http\Controllers\MedicineBookingController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NotificationController;
@@ -157,3 +158,10 @@ Route::middleware('auth:api')->group(function () {
     // تحديث حالة المستخدم إلى أوفلاين
     Route::post('/set-user-offline', [ChatController::class, 'setUserOffline']);
 });
+
+
+
+    Route::post('/medicine-bookings', [MedicineBookingController::class, 'store']);
+    Route::patch('/medicine-bookings/{medicineBooking}/approve', [MedicineBookingController::class, 'approve']);
+Route::get('/medicine-bookings', [MedicineBookingController::class, 'index']);
+Route::patch('/medicine-bookings/{id}/status', [MedicineBookingController::class, 'updateStatus']);
