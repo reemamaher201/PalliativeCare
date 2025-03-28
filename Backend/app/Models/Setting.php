@@ -12,9 +12,12 @@ class Setting extends Model
     protected $fillable = [
         'logo',
         'imgabout',
-        'main_heading',
-        'main_text',
-        'footer_text',
+        'main_heading_ar',
+        'main_text_ar',
+        'footer_text_ar',
+        'main_heading_en',
+        'main_text_en',
+        'footer_text_en',
         'background_color',
         'button_color',
     ];

@@ -5,8 +5,9 @@ import AboutSection from "./AboutSection";
 import ServicesSection from "./ServicesSection";
 import BlogSection from "./BlogSection";
 import Footer from "./Footer";
-import FeaturesSection from "./FeaturesSection.jsx";
-import { FaNewspaper } from "react-icons/fa";
+import FeaturesSection from "./FeaturesSection";
+import { FaNewspaper, FaLanguage } from "react-icons/fa";
+import { useTranslation } from "react-i18next"; // إذا كنت تريد استخدام i18n
 
 function LandingPage() {
     const [language, setLanguage] = useState("ar");
@@ -14,68 +15,45 @@ function LandingPage() {
         logo: "",
         background_color: "#fff",
         imgabout: "",
-        main_heading: "مرحباً بكم",
-        main_text: "نحن هنا لخدمتك",
-        footer_text: "جميع الحقوق محفوظة",
-        button_color: "#4CAF50",
+        main_heading_ar: "مرحباً بكم",
+        main_heading_en: "Welcome",
+        main_text_ar: "نحن هنا لخدمتك",
+        main_text_en: "We are here to serve you",
+        footer_text_ar: "جميع الحقوق محفوظة",
+        footer_text_en: "All rights reserved",
+        button_color: "#3193a5",
     });
-    const [sections, setSections] = useState([
-        { title: "قسم 1", content: "محتوى القسم 1", image: "" },
-        { title: "قسم 2", content: "محتوى القسم 2", image: "" },
-    ]);
-    const [services, setServices] = useState([
-        { title: "خدمة 1", description: "وصف الخدمة 1", image: "" },
-        { title: "خدمة 2", description: "وصف الخدمة 2", image: "" },
-    ]);
-    const [blogs, setBlogs] = useState([
-        { title: "تدوينة 1", content: "محتوى التدوينة 1", image: "" },
-        { title: "تدوينة 2", content: "محتوى التدوينة 2", image: "" },
-    ]);
-    const [features, setFeatures] = useState([
-        { title: "ميزة 1", description: "وصف الميزة 1", image: "" },
-        { title: "ميزة 2", description: "وصف الميزة 2", image: "" },
-    ]);
-    const [fastLinks, setFastLinks] = useState([
-        { title: "رابط سريع 1", url: "#" },
-        { title: "رابط سريع 2", url: "#" },
-    ]);
-    const [socialLinks, setSocialLinks] = useState([
-        { icon: "facebook", url: "#" },
-        { icon: "twitter", url: "#" },
-    ]);
+
+    const [sections, setSections] = useState([]);
+    const [services, setServices] = useState([]);
+    const [blogs, setBlogs] = useState([]);
+    const [features, setFeatures] = useState([]);
+    const [fastLinks, setFastLinks] = useState([]);
+    const [socialLinks, setSocialLinks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-// Function to change the language
+    // دالة تغيير اللغة
     const handleLanguageChange = () => {
-        setLanguage((prevLang) => (prevLang === "ar" ? "en" : "ar"));
-    };
-    const translations = {
-        en: {
-            welcome: "Welcome",
-            service: "We are here to serve you",
-        },
-        ar: {
-            welcome: "مرحبًا بكم",
-            service: "نحن هنا لخدمتك",
-        },
+        const newLang = language === "ar" ? "en" : "ar";
+        setLanguage(newLang);
+        localStorage.setItem("language", newLang);
+        document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+        document.documentElement.lang = newLang;
     };
 
-    const translateContent = (contentKey) => {
-        return translations[language][contentKey] || contentKey;
-    };
-
+    // جلب البيانات من API
     useEffect(() => {
-        async function fetchData() {
+        const fetchData = async () => {
             try {
                 const [
                     settingsRes,
                     servicesRes,
                     sectionsRes,
-                    blogRes,
+                    blogsRes,
                     featuresRes,
                     fastLinksRes,
-                    socialLinksRes
+                    socialLinksRes,
                 ] = await Promise.all([
                     axios.get("http://localhost:8000/api/show"),
                     axios.get("http://localhost:8000/api/services"),
@@ -89,50 +67,121 @@ function LandingPage() {
                 setSettings(settingsRes.data);
                 setServices(servicesRes.data || []);
                 setSections(sectionsRes.data || []);
-                setBlogs(blogRes.data || []);
+                setBlogs(blogsRes.data || []);
                 setFeatures(featuresRes.data || []);
                 setFastLinks(fastLinksRes.data || []);
                 setSocialLinks(socialLinksRes.data || []);
 
             } catch (err) {
                 console.error("Error fetching data:", err);
-                setError("حدث خطأ أثناء تحميل البيانات.");
+                setError(
+                    language === "ar"
+                        ? "حدث خطأ أثناء تحميل البيانات."
+                        : "Error loading data."
+                );
             } finally {
                 setLoading(false);
             }
-        }
+        };
+
+        // جلب اللغة المحفوظة عند التحميل
+        const savedLang = localStorage.getItem("language") || "ar";
+        setLanguage(savedLang);
+        document.documentElement.dir = savedLang === "ar" ? "rtl" : "ltr";
+        document.documentElement.lang = savedLang;
 
         fetchData();
-    }, []);
+    }, [language]);
+
+    // دالة لاختيار النص حسب اللغة
+    const t = (arText, enText) => {
+        return language === "ar" ? arText : enText;
+    };
 
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-screen">
                 <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-cyan-500 mx-auto"></div>
-                <p className="mt-4 text-lg font-semibold text-cyan-500">جاري تحميل البيانات...</p>
+                <p className="mt-4 text-lg font-semibold text-cyan-500">
+                    {t("جاري تحميل البيانات...", "Loading data...")}
+                </p>
             </div>
         );
     }
 
     if (error) {
-        return <div className="text-center p-10 text-red-500">{error}</div>;
+        return (
+            <div className="text-center p-10 text-red-500">
+                {error}
+            </div>
+        );
     }
 
     return (
-        <div className="font-sans">
+        <div className="font-sans" dir={language === "ar" ? "rtl" : "ltr"}>
             <Navbar
                 logo={settings?.logo || ""}
                 background_color={settings?.background_color || "#fff"}
+                buttonColor={settings?.button_color || "#3193a5"}
+                language={language}
                 onLanguageChange={handleLanguageChange}
             />
+
             <AboutSection
                 imgabout={settings?.imgabout || ""}
-                main_heading={translateContent("welcome")}
-                main_text={translateContent("service")}
+                main_heading={t(settings?.main_heading_ar, settings?.main_heading_en)}
+                main_text={t(settings?.main_text_ar, settings?.main_text_en)}
+                buttonColor={settings?.button_color}
             />
-            {services.length > 0 ? <ServicesSection services={services} /> : <p className="text-center p-10">لا توجد خدمات متاحة</p>}
-            {features.length > 0 ? <FeaturesSection features={features} /> : <p className="text-center p-10">لا توجد ميزات متاحة</p>}
-            {blogs.length > 0 ? <BlogSection blogs={blogs} /> : <p className="text-center p-10">لا توجد مدونات متاحة</p>}
+
+            {services.length > 0 ? (
+                <ServicesSection
+                    services={services.map(service => ({
+                        ...service,
+                        title: t(service.title_ar, service.title_en),
+                        description: t(service.description_ar, service.description_en)
+                    }))}
+                    buttonColor={settings?.button_color}
+                    title={t("خدماتنا", "Our Services")}
+                />
+            ) : (
+                <p className="text-center p-10">
+                    {t("لا توجد خدمات متاحة", "No services available")}
+                </p>
+            )}
+
+            {features.length > 0 ? (
+                <FeaturesSection
+                    features={features.map(feature => ({
+                        ...feature,
+                        title: t(feature.title_ar, feature.title_en),
+                        description: t(feature.description_ar, feature.description_en)
+                    }))}
+                    buttonColor={settings?.button_color}
+                    title={t("مميزاتنا", "Our Features")}
+                />
+            ) : (
+                <p className="text-center p-10">
+                    {t("لا توجد ميزات متاحة", "No features available")}
+                </p>
+            )}
+
+            {blogs.length > 0 ? (
+                <BlogSection
+                    blogs={blogs.map(blog => ({
+                        ...blog,
+                        title: t(blog.title_ar, blog.title_en),
+                        content: t(blog.content_ar, blog.content_en)
+                    }))}
+                    buttonColor={settings?.button_color}
+                    title={t("مدوناتنا", "Our Blogs")}
+                />
+            ) : (
+                <p className="text-center p-10">
+                    {t("لا توجد مدونات متاحة", "No blogs available")}
+                </p>
+            )}
+
             <section className="py-12 px-8" dir="rtl">
 
                 <div className="container mx-auto text-center">
@@ -198,12 +247,17 @@ function LandingPage() {
                 </div>
 
             </section>
+
             <Footer
-                footer_text={settings?.footer_text || "جميع الحقوق محفوظة"}
+                footer_text={t(settings?.footer_text_ar, settings?.footer_text_en)}
                 background_color={settings?.background_color || "#fff"}
-                buttonColor={settings?.button_color || "#4CAF50"}
-                fastLinks={fastLinks}
+                buttonColor={settings?.button_color || "#3193a5"}
+                fastLinks={fastLinks.map(link => ({
+                    ...link,
+                    title: t(link.title_ar, link.title_en)
+                }))}
                 socialLinks={socialLinks}
+                language={language}
             />
         </div>
     );

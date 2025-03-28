@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('fast_links', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string("title_ar");
+            $table->string('title_en');
             $table->string("link");
             $table->timestamps();
         });

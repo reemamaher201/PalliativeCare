@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('logo')->nullable();
             $table->string('imgabout')->nullable();
-            $table->string('main_heading')->nullable();
-            $table->text('main_text')->nullable();
-            $table->string('footer_text')->nullable();
+            $table->string('main_heading_ar')->nullable();
+            $table->string('main_heading_en')->nullable();
+            $table->text('main_text_ar')->nullable();
+            $table->text('main_text_en')->nullable();
+            $table->string('footer_text_ar')->nullable();
+            $table->string('footer_text_en')->nullable();
             $table->string('background_color')->nullable();
             $table->string('button_color')->nullable();
             $table->timestamps();

@@ -48,12 +48,15 @@ class FooterController extends Controller
     {
         try {
             $request->validate([
-                'title' => 'required|string',
+                'title_ar' => 'required|string',
+                'title_en' => 'required|string',
                 'link' => 'required|string',
             ]);
 
             $link = FastLink::create([
-                'title'=>$request->title,
+                'title_ar'=>$request->title_ar,
+                'title_en'=>$request->title_en,
+
                 'link' => $request->link,
             ]);
 

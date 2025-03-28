@@ -18,9 +18,12 @@ class SettingController extends Controller
         $request->validate([
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'imgabout' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'main_heading' => 'nullable|string',
-            'main_text' => 'nullable|string',
-            'footer_text' => 'nullable|string',
+            'main_heading_ar' => 'nullable|string',
+            'main_heading_en' => 'nullable|string',
+            'main_text_ar' => 'nullable|string',
+            'main_text_en' => 'nullable|string',
+            'footer_text_ar' => 'nullable|string',
+            'footer_text_en' => 'nullable|string',
             'background_color' => 'nullable|string',
             'button_color' => 'nullable|string',
         ]);

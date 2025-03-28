@@ -9,7 +9,8 @@ class FastLink extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'title',
+        'title_ar',
+        'title_en',
         'link'
     ];
 }
