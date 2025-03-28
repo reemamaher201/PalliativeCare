@@ -36,8 +36,8 @@ import {
 import EditLandingPage from "./EditLandingPage.jsx"; // Font Awesome
 
 const AdminDashboard = () => {
-    const [activeSection, setActiveSection] = useState('viewLandingPage'); // القسم النشط
-    const [newSection, setNewSection] = useState({ title: '', content: '', image: '' }); // بيانات القسم الجديد
+    const [activeSection, setActiveSection] = useState('viewLandingPage');
+    const [newSection, setNewSection] = useState({ title: '', content: '', image: '' });
     const [newService,setNewService] = useState({title: '', content: '', image: '' });
     const [newBlog, setNewBlog] = useState({title: '', content: '', link: '' });
     const [settings, setSettings] = useState({
@@ -47,8 +47,8 @@ const AdminDashboard = () => {
         main_text: "",
         footer_text: "",
         background_color: "#ffffff",
-        button_color: "#3193a5", // لون الزر الافتراضي
-    }); // بيانات الإعدادات
+        button_color: "#3193a5",
+    });
     const [newFeature, setNewFeature] = useState({
         title: '',
         content: '',
@@ -63,7 +63,7 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/social", newSocial,{
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });
@@ -79,7 +79,7 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/fastlink", newLink,{
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });
@@ -107,12 +107,12 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/features", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });
             alert("تمت إضافة الميزة بنجاح");
-            setNewFeature({ title: '', content: '', icon: '', image: null }); // إعادة تعيين الحقول
+            setNewFeature({ title: '', content: '', icon: '', image: null });
         } catch (error) {
             console.error("Error adding Features:", error);
         }
@@ -175,12 +175,12 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/sections", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });
             alert("تمت إضافة القسم بنجاح");
-            setNewSection({ title: '', content: '', image: null }); // إعادة تعيين الحقول
+            setNewSection({ title: '', content: '', image: null });
         } catch (error) {
             console.error("Error adding section:", error);
         }
@@ -197,12 +197,12 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/services", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });
             alert("تمت إضافة الخدمة بنجاح");
-            setNewService({ title: '', content: '', image: null }); // إعادة تعيين الحقول
+            setNewService({ title: '', content: '', image: null });
         } catch (error) {
             console.error("Error adding service:", error);
         }
@@ -214,7 +214,7 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/blogs", newBlog,{
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });
@@ -249,7 +249,7 @@ const AdminDashboard = () => {
             await axios.post("http://localhost:8000/api/settings/update", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` // أو أي طريقة أخرى لتخزين الرمز
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
 
                 },
             });

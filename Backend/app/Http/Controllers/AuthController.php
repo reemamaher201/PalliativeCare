@@ -147,7 +147,7 @@ class AuthController extends Controller
 
             $user = JWTAuth::user();
 
-            // التحقق من البريد الإلكتروني إذا كان موجودًا
+
             if ($user->email && !$user->email_verified_at) {
                 return response()->json([
                     'status' => 'error',
@@ -158,7 +158,7 @@ class AuthController extends Controller
             // Reset attempts
             $this->clearLoginAttempts($request);
 
-            // تحديث حالة المستخدم
+
             $user->update([
                 'is_active' => 1,
                 'last_login_at' => Carbon::now(),
@@ -326,9 +326,8 @@ class AuthController extends Controller
      */
     protected function hasTooManyLoginAttempts(Request $request)
     {
-        $maxAttempts = 5; // عدد المحاولات المسموحة
-        $decayMinutes = 15; // دقائق الحظر بعد تجاوز الحد
-
+        $maxAttempts = 5;
+        $decayMinutes = 15;
         return Cache::has($this->throttleKey($request)) &&
             Cache::get($this->throttleKey($request)) >= $maxAttempts;
     }

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('medicine_deletion_requests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('medicine_id'); // معرف الدواء المراد حذفه
-            $table->unsignedBigInteger('provider_id'); // معرف المزود الذي أرسل الطلب
-            $table->string('status')->default('pending'); // حالة الطلب (pending, approved, rejected)
+            $table->unsignedBigInteger('medicine_id');
+            $table->unsignedBigInteger('provider_id');
+            $table->string('status')->default('pending');
             $table->timestamps();
 
             // Foreign keys

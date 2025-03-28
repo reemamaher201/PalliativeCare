@@ -11,20 +11,20 @@ class FooterController extends Controller
 
     public function index()
     {
-        $social = Social::all(); // جلب أول سجل من جدول Social
+        $social = Social::all();
         if ($social->isNotEmpty()) {
-            return response()->json($social); // إرجاع السجل إذا وجد
+            return response()->json($social);
         } else {
-            return response()->json(['message' => 'لا يوجد رابط تواصل متاح'], 404); // إرجاع رسالة إذا لم يتم العثور على سجل
+            return response()->json(['message' => 'لا يوجد رابط تواصل متاح'], 404);
         }
     }
     public function indexLink()
     {
-        $fastLinks = FastLink::all(); // جلب جميع السجلات من جدول FastLink
+        $fastLinks = FastLink::all();
         if ($fastLinks->isNotEmpty()) {
-            return response()->json($fastLinks); // إرجاع السجلات إذا وجدت
+            return response()->json($fastLinks);
         } else {
-            return response()->json(['message' => 'لا توجد روابط سريعة متاحة'], 404); // إرجاع رسالة إذا لم يتم العثور على سجلات
+            return response()->json(['message' => 'لا توجد روابط سريعة متاحة'], 404);
         }
     }
     public function store(Request $request)

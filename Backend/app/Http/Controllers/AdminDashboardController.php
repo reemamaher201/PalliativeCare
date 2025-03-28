@@ -7,13 +7,11 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AdminDashboardController extends Controller {
 
-    // جلب بيانات الصفحة
     public function show() {
         try {
-            // التحقق من التوكن وجلب المستخدم
+
             $authUser = JWTAuth::parseToken()->authenticate();
 
-            // التحقق من نوع المستخدم (يجب أن يكون 3)
             if ($authUser->user_type !== User::USER_TYPE_ADMIN){
                 return response()->json(['message' => 'غير مصرح لك بعرض بيانات صفحة الهبوط'], 403);
             }

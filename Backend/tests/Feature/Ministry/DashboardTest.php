@@ -20,20 +20,16 @@ class DashboardTest extends TestCase
 
     public function test_dashboardM_with_valid_token()
     {
-        // إنشاء مستخدم من نوع الوزارة
         $user = User::factory()->create([
             'user_type' => User::USER_TYPE_MINISTRY,
         ]);
 
-        // إنشاء توكن JWT للمستخدم
         $token = JWTAuth::fromUser($user);
 
-        // إرسال الطلب مع التوكن في الهيدر
         $response = $this->withHeaders([
             'Authorization' => "Bearer $token",
         ])->getJson('/api/dashboardM');
 
-        // التحقق من أن الطلب تم بنجاح
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'registeredPatientsCount',

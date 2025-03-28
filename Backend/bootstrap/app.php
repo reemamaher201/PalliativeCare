@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'check.user_type' => CheckUserType::class, // تمرير مصفوفة من الـ aliases
+            'check.user_type' => CheckUserType::class,
         ]);
 
     })

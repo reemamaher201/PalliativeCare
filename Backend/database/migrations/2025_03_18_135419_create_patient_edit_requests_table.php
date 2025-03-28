@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('patient_id');
             $table->unsignedBigInteger('provider_id');
-            $table->json('updated_data'); // البيانات الجديدة التي يرغب المزود في تعديلها
+            $table->json('updated_data');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
 

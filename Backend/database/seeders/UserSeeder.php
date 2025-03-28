@@ -17,8 +17,8 @@ class UserSeeder extends Seeder
             'identity_number' => '400045367',
             'name' => 'Reema Maher',
             'phoneNumber' => '595159730',
-            'password' => Hash::make('12345678'), // قم بتغيير كلمة المرور إلى كلمة مرور آمنة
-            'user_type' => 0, // عامل وزارة
+            'password' => Hash::make('12345678'),
+            'user_type' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -27,8 +27,8 @@ class UserSeeder extends Seeder
             'identity_number' => '123456799',
             'name' => 'أحمد محمد',
             'phoneNumber' => '1234567899',
-            'password' => Hash::make('12345678'), // تغيير كلمة المرور
-            'user_type' => 0, // نوع مستخدم آخر
+            'password' => Hash::make('12345678'),
+            'user_type' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -36,8 +36,8 @@ class UserSeeder extends Seeder
             'identity_number' => '123456789',
             'name' => 'John Doe',
             'phoneNumber' => '1234567890',
-            'password' => Hash::make('12345678'), // تغيير كلمة المرور
-            'user_type' => 0, // نوع مستخدم آخر
+            'password' => Hash::make('12345678'),
+            'user_type' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

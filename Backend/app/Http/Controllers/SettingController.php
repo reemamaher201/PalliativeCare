@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
-    // جلب الإعدادات
     public function show()
     {
         $settings = Setting::first();
         return response()->json($settings);
     }
 
-    // حفظ التعديلات
     public function store(Request $request)
     {
         $request->validate([
@@ -31,12 +29,12 @@ class SettingController extends Controller
 
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('images', 'public');
-            $settings->logo = url('storage/images/' . basename($logoPath)); // تعديل مسار رابط الصوره
+            $settings->logo = url('storage/images/' . basename($logoPath));
         }
 
         if ($request->hasFile('imgabout')) {
             $imgaboutPath = $request->file('imgabout')->store('images', 'public');
-            $settings->imgabout = url('storage/images/' . basename($imgaboutPath)); // تعديل مسار رابط الصوره
+            $settings->imgabout = url('storage/images/' . basename($imgaboutPath));
         }
 
         $settings->fill($request->except(['logo', 'imgabout']));

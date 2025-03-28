@@ -13,7 +13,7 @@ class FeaturesController extends Controller
     public function index()
     {
         $features = Feature::all();
-        return response()->json($features); // إزالة الـ 'data' من الـ response
+        return response()->json($features);
     }
 
     public function store(Request $request)

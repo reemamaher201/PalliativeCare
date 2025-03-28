@@ -11,7 +11,7 @@ import {
     XCircleIcon,
     ClockIcon,
     ChevronDownIcon,
-    ChevronUpIcon
+    ChevronUpIcon, ListBulletIcon
 } from "@heroicons/react/24/outline";
 import {FilterIcon, SearchIcon} from "lucide-react";
 
@@ -49,11 +49,18 @@ const ShowRequests = () => {
             const bookingsResponse = await axios.get("http://127.0.0.1:8000/api/medicine-bookings", {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setMedicineBookings(bookingsResponse.data);
+
+            // Make sure the data is an array
+            const bookingsData = Array.isArray(bookingsResponse.data)
+                ? bookingsResponse.data
+                : bookingsResponse.data.data || [];
+
+            setMedicineBookings(bookingsData);
 
         } catch (error) {
             console.error("Error fetching requests:", error);
             setError("حدث خطأ أثناء جلب الطلبات.");
+            setMedicineBookings([]); // Reset to empty array on error
         } finally {
             setLoading(false);
         }
@@ -67,7 +74,7 @@ const ShowRequests = () => {
                 { status },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            fetchRequests(); // تحديث البيانات بعد التغيير
+            fetchRequests();
         } catch (error) {
             console.error("Error updating booking status:", error);
             setError("حدث خطأ أثناء تحديث حالة الحجز.");
@@ -100,7 +107,7 @@ const ShowRequests = () => {
 
     useEffect(() => {
         fetchRequests();
-        const interval = setInterval(fetchRequests, 10000); // تحديث كل 10 ثواني
+        const interval = setInterval(fetchRequests, 10000);
         return () => clearInterval(interval);
     }, []);
 
@@ -137,6 +144,13 @@ const ShowRequests = () => {
                         <h1 className="text-2xl font-bold text-gray-900">إدارة طلبات الوزارة</h1>
 
                         <div className="flex space-x-4">
+                            <button
+                                onClick={() => navigate('/patients/pending')}
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                <ListBulletIcon className="h-5 w-5 mr-1" />
+                                عرض جميع الطلبات
+                            </button>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <SearchIcon className="h-5 w-5 text-gray-400" />

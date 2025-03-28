@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('patients', function (Blueprint $table) {
-            // إضافة العمود add_by كـ foreign key
-            $table->unsignedBigInteger('add_by')->nullable(); // يمكن أن يكون nullable مؤقتًا
+            $table->unsignedBigInteger('add_by')->nullable();
             $table->foreign('add_by')->references('id')->on('users')->onDelete('cascade');
         });
     }
@@ -24,9 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('patients', function (Blueprint $table) {
-            // حذف العلاقة ثم العمود
-            $table->dropForeign(['add_by']); // حذف العلاقة
-            $table->dropColumn('add_by'); // حذف العمود
+            $table->dropForeign(['add_by']);
+            $table->dropColumn('add_by');
         });
     }
 };

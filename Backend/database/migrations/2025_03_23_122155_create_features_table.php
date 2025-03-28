@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
-            $table->string('icon')->nullable(); // يمكن استخدام اسم الأيقونة
-            $table->string('image')->nullable(); // مسار الصورة
+            $table->string('icon')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

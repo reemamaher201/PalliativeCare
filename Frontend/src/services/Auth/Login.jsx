@@ -60,10 +60,8 @@ const Login = () => {
                 backgroundPosition: 'center',
             }}
         >
-            {/* طبقة شفافة */}
             <div className="absolute inset-0 bg-black opacity-50"></div>
 
-            {/* صندوق تسجيل الدخول */}
             <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg relative z-10">
                 <h2 className="text-2xl font-bold text-center text-cyan-700 mb-6">تسجيل دخول</h2>
 
@@ -73,7 +71,6 @@ const Login = () => {
                     </div>
                 )}
 
-                {/* الحقول */}
                 <form onSubmit={handleLogin}>
                     {/* رقم الهوية */}
                     <div className="mb-4">

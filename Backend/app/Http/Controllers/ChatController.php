@@ -9,7 +9,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ChatController extends Controller
 {
-    // إرسال رسالة
     public function sendMessage(Request $request)
     {
         $request->validate([
@@ -37,7 +36,6 @@ class ChatController extends Controller
         return response()->json(['message' => 'تم إرسال الرسالة بنجاح', 'data' => $message], 201);
     }
 
-    // الحصول على الرسائل بين مستخدمين
     public function getMessages($receiverId)
     {
         $user = JWTAuth::parseToken()->authenticate();
@@ -62,7 +60,6 @@ class ChatController extends Controller
         return response()->json(['messages' => $messages], 200);
     }
 
-    // get users with the online status
     public function getChatUsers()
     {
         $user = JWTAuth::parseToken()->authenticate();
@@ -79,7 +76,6 @@ class ChatController extends Controller
         return response()->json(['users' => $users], 200);
     }
 
-    // تحديث حالة المستخدم إلى نشط
     public function setUserActive(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
@@ -89,7 +85,6 @@ class ChatController extends Controller
         return response()->json(['message' => 'تم تحديث الحالة إلى نشط'], 200);
     }
 
-    // تحديث حالة المستخدم إلى غير نشط
     public function setUserInactive(Request $request)
     {
         $user = JWTAuth::parseToken()->authenticate();
@@ -99,7 +94,6 @@ class ChatController extends Controller
         return response()->json(['message' => 'تم تحديث الحالة إلى غير نشط'], 200);
     }
 
-    // دالة مساعدة للتحقق من صلاحية المحادثة
     private function isValidChat($sender, $receiver)
     {
         if ($receiver->user_type == 3) {

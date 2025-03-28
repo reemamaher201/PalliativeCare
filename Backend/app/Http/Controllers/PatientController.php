@@ -151,7 +151,7 @@ class PatientController extends Controller
                 'birth_date' => $request->birth_date,
                 'care_type' => $request->care_type,
                 'gender' => $request->gender,
-                'add_by' => $patient->add_by, // الحفاظ على قيمة add_by الحالية
+                'add_by' => $patient->add_by,
             ]);
 
             $user = User::where('identity_number', $oldIdentityNumber)->first();
@@ -206,16 +206,13 @@ class PatientController extends Controller
     public function checkIdentityNumber($identityNumber): JsonResponse
     {
         try {
-            // التحقق من وجود رقم الهوية في جدول المرضى أو طلبات المرضى
             $existsInPatients = Patient::where('identity_number', $identityNumber)->exists();
             $existsInRequests = PatientRequest::where('identity_number', $identityNumber)->exists();
 
-            // إذا كان الرقم موجودًا في أي من الجداول
             if ($existsInPatients || $existsInRequests) {
                 return response()->json(['exists' => true], 200);
             }
 
-            // إذا لم يكن الرقم موجودًا
             return response()->json(['exists' => false], 200);
         } catch (\Exception $e) {
             Log::error('Error in checkIdentityNumber: ' . $e->getMessage());
@@ -278,7 +275,6 @@ class PatientController extends Controller
 
             $patientRequest = PatientRequest::findOrFail($id);
 
-            // التحقق من عدم وجود مستخدم بنفس رقم الهوية
             if (User::where('identity_number', $patientRequest->identity_number)->exists()) {
                 return response()->json(['message' => 'رقم الهوية مستخدم بالفعل'], 400);
             }
@@ -286,7 +282,7 @@ class PatientController extends Controller
             $user = User::create([
                 'identity_number' => $patientRequest->identity_number,
                 'name' => $patientRequest->name,
-                'password' => Hash::make('password'), // يمكنك إنشاء كلمة مرور عشوائية أو طلبها من الوزارة
+                'password' => Hash::make('password'),
                 'address' => $patientRequest->address,
                 'user_type' => User::USER_TYPE_PATIENT,
                 'phoneNumber' => $patientRequest->phoneNumber,
@@ -300,7 +296,7 @@ class PatientController extends Controller
                 'care_type' => $patientRequest->care_type,
                 'gender' => $patientRequest->gender,
                 'phoneNumber' => $patientRequest->phoneNumber,
-                'add_by' => $patientRequest->provider_id, // إضافة add_by
+                'add_by' => $patientRequest->provider_id,
             ]);
 
             $patientRequest->delete();
@@ -345,19 +341,16 @@ class PatientController extends Controller
         try {
             $authUser = JWTAuth::parseToken()->authenticate();
 
-            // التحقق من صلاحية المستخدم
             if ($authUser->user_type !== User::USER_TYPE_MINISTRY && $authUser->user_type !== User::USER_TYPE_PROVIDER) {
                 return response()->json(['error' => 'Unauthorized: User type mismatch'], 403);
             }
 
-            // البحث عن الطلب باستخدام الـ ID مع جلب اسم المرسل
             $patientRequest = PatientRequest::with('provider:id,name')->find($id);
 
             if (!$patientRequest) {
                 return response()->json(['error' => 'Request not found'], 404);
             }
 
-            // إرجاع تفاصيل الطلب مع اسم المرسل
             return response()->json([
                 'id' => $patientRequest->id,
                 'identity_number' => $patientRequest->identity_number,
@@ -367,7 +360,7 @@ class PatientController extends Controller
                 'care_type' => $patientRequest->care_type,
                 'gender' => $patientRequest->gender,
                 'phoneNumber' => $patientRequest->phoneNumber,
-                'sender_name' => $patientRequest->provider->name, // اسم المرسل
+                'sender_name' => $patientRequest->provider->name,
                 'created_at' => $patientRequest->created_at,
                 'updated_at' => $patientRequest->updated_at,
             ]);
@@ -389,7 +382,6 @@ class PatientController extends Controller
                 return response()->json(['message' => 'غير مصرح لك بعرض طلبات المرضى'], 403);
             }
 
-            // جلب الطلبات مع معلومات المزود
             $patientRequests = PatientRequest::with('provider:id,name')->get();
 
             return response()->json($patientRequests, 200);
@@ -406,18 +398,15 @@ class PatientController extends Controller
 
     public function getProviderPatients()
     {
-        // التحقق من أن المستخدم الحالي هو مزود
         $user = Auth::user();
         if ($user->user_type !== User::USER_TYPE_PROVIDER) {
             return response()->json(['error' => 'غير مصرح لك بالوصول إلى هذه البيانات.'], 403);
         }
 
-        // جلب الأدوية التي أضافها المزود مع معلومات المستخدم ورقم الهاتف
-        $patient = Patient::with('addedBy:id,phoneNumber') // جلب رقم الجوال من جدول users
+        $patient = Patient::with('addedBy:id,phoneNumber')
         ->where('add_by', $user->id)
             ->get();
 
-        // إعادة البيانات مع حالة الحذف
         return response()->json($patient);
     }
 }

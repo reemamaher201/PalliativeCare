@@ -27,7 +27,6 @@ const EditLandingPage = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [editingType, setEditingType] = useState('');
 
-    // جلب البيانات الأولية
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -64,13 +63,11 @@ const EditLandingPage = () => {
         fetchData();
     }, []);
 
-    // بدء التعديل على عنصر
     const startEditing = (type, item = null) => {
         setEditingType(type);
         setEditingItem(item || getDefaultItem(type));
     };
 
-    // الحصول على عنصر افتراضي حسب النوع
     const getDefaultItem = (type) => {
         switch (type) {
             case 'settings': return { ...settings };
@@ -84,7 +81,6 @@ const EditLandingPage = () => {
         }
     };
 
-    // حفظ التعديلات
     const saveChanges = async () => {
         try {
             let response;
@@ -109,7 +105,6 @@ const EditLandingPage = () => {
                     },
                 });
             } else {
-                // إنشاء عنصر جديد
                 response = await axios.post(`http://localhost:8000/api/${editingType}s`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -117,7 +112,6 @@ const EditLandingPage = () => {
                 });
             }
 
-            // تحديث الحالة بعد الحفظ
             updateStateAfterSave(editingType, response.data);
 
             alert("تم حفظ التغييرات بنجاح");
@@ -128,7 +122,6 @@ const EditLandingPage = () => {
         }
     };
 
-    // تحديث الحالة بعد الحفظ
     const updateStateAfterSave = (type, newItem) => {
         const updateArray = (array, newItem) => {
             if (newItem.id) {
@@ -168,12 +161,10 @@ const EditLandingPage = () => {
         }
     };
 
-    // حذف عنصر
     const deleteItem = async (type, id) => {
         try {
             await axios.delete(`http://localhost:8000/api/${type}s/${id}`);
 
-            // تحديث الحالة بعد الحذف
             switch (type) {
                 case 'section':
                     setSections(sections.filter(item => item.id !== id));
@@ -203,19 +194,16 @@ const EditLandingPage = () => {
         }
     };
 
-    // إلغاء التعديل
     const cancelEditing = () => {
         setEditingItem(null);
         setEditingType('');
     };
 
-    // معالجة تغيير الحقول
     const handleFieldChange = (e) => {
         const { name, value } = e.target;
         setEditingItem({ ...editingItem, [name]: value });
     };
 
-    // معالجة تغيير الصور
     const handleImageChange = (e) => {
         setEditingItem({ ...editingItem, image: e.target.files[0] });
     };
@@ -228,7 +216,6 @@ const EditLandingPage = () => {
                         {editingItem.id ? 'تعديل' : 'إضافة'} {getTypeName(editingType)}
                     </h2>
 
-                    {/* حقول التعديل المشتركة */}
                     {['title', 'content', 'main_heading', 'main_text', 'footer_text', 'social', 'link'].map(field => (
                         editingItem[field] !== undefined && (
                             <div key={field} className="mb-4">
@@ -254,7 +241,6 @@ const EditLandingPage = () => {
                         )
                     ))}
 
-                    {/* حقول خاصة بالإعدادات */}
                     {editingType === 'settings' && (
                         <>
                             <div className="mb-4">
@@ -280,7 +266,6 @@ const EditLandingPage = () => {
                         </>
                     )}
 
-                    {/* حقول الصور */}
                     {['logo', 'imgabout', 'image'].map(field => (
                         editingItem[field] !== undefined && (
                             <div key={field} className="mb-4">
@@ -318,7 +303,6 @@ const EditLandingPage = () => {
                 </div>
             ) : (
                 <>
-                    {/* قسم الإعدادات العامة */}
                     <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">الإعدادات العامة</h2>
@@ -356,7 +340,6 @@ const EditLandingPage = () => {
                         </div>
                     </div>
 
-                    {/* قسم الأقسام */}
                     <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">الأقسام</h2>
@@ -400,7 +383,6 @@ const EditLandingPage = () => {
                         </div>
                     </div>
 
-                    {/* قسم الخدمات */}
                     <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">الخدمات</h2>
@@ -444,7 +426,6 @@ const EditLandingPage = () => {
                         </div>
                     </div>
 
-                    {/* قسم المدونات */}
                     <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">المدونات والنصائح</h2>
@@ -486,7 +467,6 @@ const EditLandingPage = () => {
                         </div>
                     </div>
 
-                    {/* قسم مزايا التسجيل */}
                     <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">مزايا التسجيل</h2>
@@ -530,7 +510,6 @@ const EditLandingPage = () => {
                         </div>
                     </div>
 
-                    {/* قسم روابط التواصل */}
                     <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">روابط التواصل</h2>
@@ -566,7 +545,6 @@ const EditLandingPage = () => {
                         </div>
                     </div>
 
-                    {/* قسم الروابط السريعة */}
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">الروابط السريعة</h2>
@@ -610,7 +588,6 @@ const EditLandingPage = () => {
     );
 };
 
-// دالة مساعدة للحصول على اسم النوع
 const getTypeName = (type) => {
     const names = {
         'settings': 'الإعدادات',
@@ -624,7 +601,6 @@ const getTypeName = (type) => {
     return names[type] || type;
 };
 
-// دالة مساعدة للحصول على تسمية الحقل
 const getFieldLabel = (field) => {
     const labels = {
         'title': 'العنوان',

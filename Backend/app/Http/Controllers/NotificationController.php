@@ -18,7 +18,6 @@ class NotificationController extends Controller
 
     public function store(Request $request)
     {
-        // التحقق من صحة البيانات
         $request->validate([
             'title' => 'required|string|max:255',
             'text' => 'required|string',
@@ -26,8 +25,7 @@ class NotificationController extends Controller
             'recipient' => 'required|string|max:255',
         ]);
 
-        // التحقق من نوع المستخدم
-        $authUser = JWTAuth::parseToken()->authenticate(); // استرجاع المستخدم المصادق عليه
+        $authUser = JWTAuth::parseToken()->authenticate();
         if ($authUser->user_type !== User::USER_TYPE_MINISTRY) {
             return response()->json(['message' => 'غير مصرح لك بإنشاء إشعار'], 403);
         }

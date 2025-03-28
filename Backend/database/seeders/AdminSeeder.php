@@ -12,13 +12,13 @@ class AdminSeeder extends Seeder
     public function run()
     {
         DB::table('users')->insert([
-            'identity_number' => '123123123', // رقم الهوية
-            'phoneNumber' => '966512345678', // رقم الجوال
+            'identity_number' => '123123123',
+            'phoneNumber' => '966512345678',
             'name' => 'Admin',
             'phoneNumber_verified_at' => now(),
-            'password' => Hash::make('12345678'), // ضع كلمة المرور هنا
+            'password' => Hash::make('12345678'),
             'user_type' => 3,
-            'address' => 'غزة', // العنوان
+            'address' => 'غزة',
             'remember_token' => Str::random(10),
             'created_at' => now(),
             'updated_at' => now(),

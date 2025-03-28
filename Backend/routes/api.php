@@ -18,11 +18,9 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Routes المصادقة (لا تتطلب تسجيل الدخول)
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
 
-// Routes العامة (لا تتطلب تسجيل الدخول)
 Route::get('/show', [SettingController::class, 'show']);
 Route::get('/sections', [SectionController::class, 'index']);
 Route::get('/services', [ServiceController::class, 'index']);
@@ -36,15 +34,12 @@ Route::get('/subscribers', [NewsletterController::class, 'getSubscribers']);
 Route::post('/send-newsletter', [NewsletterController::class, 'sendNewsletter']);
 
 
-// Routes المحمية (تتطلب تسجيل الدخول)
-Route::middleware('auth:api')->group(function () {
-    // AuthController (تسجيل الخروج)
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-    // UserController (بيانات المستخدم)
     Route::get('/me', [UserController::class, 'me'])->name('user.me');
 
-    // Routes خاصة بالمديرين
+
 
     Route::get('/dashboardM', [UserController::class, 'dashboardM'])->name('user.dashboardM');
     Route::get('/showprovider', [ProviderController::class, 'showprovider'])->name('provider.showprovider');
@@ -76,18 +71,15 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/deletion-requests/{id}/reject', [ProviderController::class, 'rejectDeletionRequest']);
     Route::post('/deletion-requestsp/{id}/approve', [ProviderController::class, 'approveDeletionRequestp']);
     Route::post('/deletion-requestsp/{id}/reject', [ProviderController::class, 'rejectDeletionRequestp']);
-// لطلبات المرضى
     Route::put('/patient-requests/{id}', [ProviderController::class, 'updatePatientRequest']);
     Route::delete('/patient-requests/{id}', [ProviderController::class, 'deletePatientRequest']);
 
-// لطلبات الأدوية
     Route::put('/med-requests/{id}', [ProviderController::class, 'updateMedRequest']);
     Route::post('/medicines/{id}/request-delete', [ProviderController::class, 'requestDeleteMedicine']);
     Route::post('/patients/{id}/request-delete', [ProviderController::class, 'requestDeletePatient']);
 
 
 
-// في ملف routes/api.php
     Route::get('/deletion-requests', [ProviderController::class, 'getDeletionRequests']);
     Route::get('/deletion-requestsp', [ProviderController::class, 'getDeletionRequestsp']);
 
@@ -98,7 +90,6 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/updatenotification/{id}', [NotificationController::class, 'updatenotification'])->name('notification.updatenotification');
     Route::delete('/deletenotification/{id}', [NotificationController::class, 'destroynotification'])->name('notification.deletenotification');
 
-    // Routes خاصة بمزودي الخدمة
     Route::middleware(['check.user_type:PROVIDER'])->group(function () {
         Route::get('/dashboardS', [ProviderController::class, 'dashboardS'])->name('provider.dashboardS');
         Route::put('/updateprovider/{id}', [ProviderController::class, 'update'])->name('provider.updateprovider');
@@ -119,7 +110,7 @@ Route::middleware('auth:api')->group(function () {
 
     });
 
-    // Routes خاصة بالمرضى
+
 //    Route::middleware(['check.user_type:PATIENT'])->group(function () {
     Route::get('/user-profile', [PatientController::class, 'getUserProfile'])->name('user.profile');
     Route::put('/updatepatient/{id}', [PatientController::class, 'update'])->name('user.updatepatient');
@@ -127,35 +118,30 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
     Route::post('/storepatient', [PatientController::class, 'storepatient'])->name('patients.storepatient');
 //    });
-});
+
 
 
 // routes/api.php
 Route::post('refresh-token', [AuthController::class, 'refreshToken']);
-Route::get('/modification-requests-med', [ProviderController::class, 'index']); // جلب جميع الطلبات
+Route::get('/modification-requests-med', [ProviderController::class, 'index']);
 Route::post('/medicine-edit-requests/{id}/approve', [ProviderController::class, 'approve']);
 Route::post('/medicine-edit-requests/{id}/reject', [ProviderController::class, 'reject']);
 
 Route::post('/patient-edit-requests/{id}/approve', [ProviderController::class, 'approvep']);
 Route::post('/patient-edit-requests/{id}/reject', [ProviderController::class, 'rejectp']);
 
-Route::get('/modification-requests', [ProviderController::class, 'show']); // جلب جميع الطلبات
+Route::get('/modification-requests', [ProviderController::class, 'show']);
 
 
 Route::middleware('auth:api')->group(function () {
-    // إرسال رسالة
     Route::post('/send-message', [ChatController::class, 'sendMessage']);
 
-    // الحصول على الرسائل بين مستخدمين
     Route::get('/get-messages/{receiverId}', [ChatController::class, 'getMessages']);
 
-    // الحصول على قائمة المستخدمين للدردشة
     Route::get('/get-chat-users', [ChatController::class, 'getChatUsers']);
 
-    // تحديث حالة المستخدم إلى أونلاين
     Route::post('/set-user-online', [ChatController::class, 'setUserOnline']);
 
-    // تحديث حالة المستخدم إلى أوفلاين
     Route::post('/set-user-offline', [ChatController::class, 'setUserOffline']);
 });
 
@@ -165,3 +151,5 @@ Route::middleware('auth:api')->group(function () {
     Route::patch('/medicine-bookings/{medicineBooking}/approve', [MedicineBookingController::class, 'approve']);
 Route::get('/medicine-bookings', [MedicineBookingController::class, 'index']);
 Route::patch('/medicine-bookings/{id}/status', [MedicineBookingController::class, 'updateStatus']);
+
+Route::get('/checkData', [MedicineBookingController::class, 'index']);

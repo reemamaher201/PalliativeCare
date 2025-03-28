@@ -12,9 +12,9 @@ class NewsletterSubscriber extends Model
 
 
 
-    protected $table = 'newsletter_subscribers'; // اسم الجدول في قاعدة البيانات
+    protected $table = 'newsletter_subscribers';
 
-    protected $fillable = ['email']; // الحقول التي يمكن تعبئتها تلقائيًا
+    protected $fillable = ['email'];
 
-    public $timestamps = true; // لتخزين تاريخ الإنشاء والتحديث تلقائيًا
+    public $timestamps = true;
 }

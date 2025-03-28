@@ -18,15 +18,14 @@ class Patient extends Model
         'care_type',
         'gender',
         'phoneNumber',
-        'add_by', // إضافة add_by إلى الحقول القابلة للتعبئة
-        'delete_status', // إضافة العمود الجديد
+        'add_by',
+        'delete_status',
         'edit_status',
 
 
     ];
 
-    // العلاقة مع جدول المستخدمين
-    public function user()
+     public function user()
     {
         return $this->belongsTo(User::class, 'identity_number', 'identity_number');
     }

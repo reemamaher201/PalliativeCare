@@ -9,6 +9,7 @@ import FeaturesSection from "./FeaturesSection.jsx";
 import { FaNewspaper } from "react-icons/fa";
 
 function LandingPage() {
+    const [language, setLanguage] = useState("ar");
     const [settings, setSettings] = useState({
         logo: "",
         background_color: "#fff",
@@ -45,6 +46,24 @@ function LandingPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+// Function to change the language
+    const handleLanguageChange = () => {
+        setLanguage((prevLang) => (prevLang === "ar" ? "en" : "ar"));
+    };
+    const translations = {
+        en: {
+            welcome: "Welcome",
+            service: "We are here to serve you",
+        },
+        ar: {
+            welcome: "مرحبًا بكم",
+            service: "نحن هنا لخدمتك",
+        },
+    };
+
+    const translateContent = (contentKey) => {
+        return translations[language][contentKey] || contentKey;
+    };
 
     useEffect(() => {
         async function fetchData() {
@@ -63,8 +82,8 @@ function LandingPage() {
                     axios.get("http://localhost:8000/api/sections"),
                     axios.get("http://localhost:8000/api/blogs"),
                     axios.get("http://localhost:8000/api/features"),
-                    axios.get("http://localhost:8000/api/fastlink"), // ✅ جلب الروابط السريعة
-                    axios.get("http://localhost:8000/api/social"), // ✅ جلب روابط التواصل
+                    axios.get("http://localhost:8000/api/fastlink"),
+                    axios.get("http://localhost:8000/api/social"),
                 ]);
 
                 setSettings(settingsRes.data);
@@ -101,10 +120,16 @@ function LandingPage() {
 
     return (
         <div className="font-sans">
-            <Navbar logo={settings?.logo || ""} background_color={settings?.background_color || "#fff"} />
-
-            <AboutSection imgabout={settings?.imgabout || ""} main_heading={settings?.main_heading || "مرحبًا بكم"} main_text={settings?.main_text || "نحن هنا لخدمتك"} />
-
+            <Navbar
+                logo={settings?.logo || ""}
+                background_color={settings?.background_color || "#fff"}
+                onLanguageChange={handleLanguageChange}
+            />
+            <AboutSection
+                imgabout={settings?.imgabout || ""}
+                main_heading={translateContent("welcome")}
+                main_text={translateContent("service")}
+            />
             {services.length > 0 ? <ServicesSection services={services} /> : <p className="text-center p-10">لا توجد خدمات متاحة</p>}
             {features.length > 0 ? <FeaturesSection features={features} /> : <p className="text-center p-10">لا توجد ميزات متاحة</p>}
             {blogs.length > 0 ? <BlogSection blogs={blogs} /> : <p className="text-center p-10">لا توجد مدونات متاحة</p>}
@@ -114,7 +139,7 @@ function LandingPage() {
 
                     <h2 className="text-2xl font-bold mb-8 text-gray-800 flex items-center justify-center gap-2">
 
-                        <FaNewspaper className="text-cyan-600 w-6 h-6" /> {/* أيقونة الأقسام الجديدة */}
+                        <FaNewspaper className="text-cyan-600 w-6 h-6" />
 
                         الأقسام الجديدة
 
@@ -177,8 +202,8 @@ function LandingPage() {
                 footer_text={settings?.footer_text || "جميع الحقوق محفوظة"}
                 background_color={settings?.background_color || "#fff"}
                 buttonColor={settings?.button_color || "#4CAF50"}
-                fastLinks={fastLinks} // ✅ تمرير الروابط السريعة للفوتر
-                socialLinks={socialLinks} // ✅ تمرير روابط التواصل للفوتر
+                fastLinks={fastLinks}
+                socialLinks={socialLinks}
             />
         </div>
     );

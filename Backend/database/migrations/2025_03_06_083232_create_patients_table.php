@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('patients', function (Blueprint $table) {
-            $table->id(); // مفتاح رئيسي تلقائي (auto-incrementing) لجدول المرضى
-            $table->string('identity_number'); // مفتاح أجنبي من جدول المستخدمين
+            $table->id();
+            $table->string('identity_number');
             $table->string('name');
             $table->string('phoneNumber');
             $table->string('address')->nullable();

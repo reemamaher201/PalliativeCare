@@ -11,16 +11,13 @@ const ServicesSection = ({ services }) => {
                             key={index}
                             className="bg-white shadow-lg rounded-xl p-6 transition-transform transform hover:scale-105 hover:shadow-2xl"
                         >
-                            {/* عنوان الخدمة مع أيقونة طبية */}
                             <h3 className="text-xl font-bold text-cyan-700 mb-4 flex items-center justify-center gap-2">
                                 {service.icon && <span className="text-3xl">{service.icon}</span>}
                                 {service.title}
                             </h3>
 
-                            {/* وصف الخدمة */}
                             <p className="text-gray-700 mb-4">{service.content}</p>
 
-                            {/* صورة رمزية للخدمة إن وُجدت */}
                             {service.image && (
                                 <img
                                     src={service.image}

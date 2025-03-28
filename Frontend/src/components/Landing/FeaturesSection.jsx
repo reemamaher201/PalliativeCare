@@ -100,15 +100,12 @@ const FeaturesSection = ({ features }) => {
                             className="bg-white shadow-lg rounded-xl p-6 transition-transform transform hover:scale-105 hover:shadow-2xl"
                         >
                             <h3 className="text-xl font-bold text-cyan-700 mb-4 flex items-center justify-center gap-2">
-                                {/* عرض الأيقونة إذا تم العثور عليها */}
                                 {iconData && <span className="text-3xl">{iconData.icon}</span>}
                                 {feature.title}
                             </h3>
 
-                            {/* نص الميزة */}
                             <p className="text-gray-700">{feature.content}</p>
 
-                            {/* صورة توضيحية إن وجدت */}
                             {feature.image && (
                                 <img src={feature.image} alt={feature.title} className="w-full h-40 object-cover mt-4 rounded-lg" />
                             )}
@@ -139,7 +136,6 @@ const FeaturesSection = ({ features }) => {
                             </button>
                         </div>
 
-                        {/* نقاط التمرير */}
                         <div className="flex justify-center mt-6 space-x-2">
                             {Array.from({ length: totalPages }).map((_, index) => (
                                 <button

@@ -18,13 +18,15 @@ class MedicineBooking extends Model
         'rejection_reason'
     ];
 
+    protected $with = ['user', 'medicine'];
+
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function medicine()
     {
-        return $this->belongsTo(Medicine::class);
+        return $this->belongsTo(Medicine::class, 'medicine_id', 'id');
     }
 }

@@ -155,7 +155,7 @@ const UserProfile = () => {
             );
 
             // Redirect to bookings page with success message
-            navigate('/medicine-bookings?success=تم تقديم طلب الحجز بنجاح وهو قيد المراجعة');
+            navigate('/showmybooking');
 
         } catch (error) {
             console.error("فشل في حجز الدواء:", error);

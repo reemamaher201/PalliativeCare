@@ -1,4 +1,5 @@
 import React from "react";
+import {logout} from "../../services/Auth/auth.jsx";
 
 const Navbar = ({ onLogout }) => {
     return (

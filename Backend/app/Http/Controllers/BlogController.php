@@ -15,7 +15,6 @@ class BlogController extends Controller
         return response()->json($blogs);
     }
 
-    // إضافة قسم جديد
     public function store(Request $request)
     {
         $request->validate([
@@ -24,7 +23,6 @@ class BlogController extends Controller
             'link' => 'nullable|url',
         ]);
 
-        // إنشاء قسم جديد
         $blog = Blog::create([
             'title' => $request->title,
             'content' => $request->content,

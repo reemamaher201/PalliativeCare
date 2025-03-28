@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('patients', function (Blueprint $table) {
-            $table->tinyInteger('edit_status')->default(0); // 0: لا يوجد طلب حذف, 1: طلب حذف معلق, 2: طلب حذف مرفوض
+            $table->tinyInteger('edit_status')->default(0);
 
         });
     }

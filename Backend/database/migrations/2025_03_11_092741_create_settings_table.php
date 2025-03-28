@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('main_text')->nullable();
             $table->string('footer_text')->nullable();
             $table->string('background_color')->nullable();
-            $table->string('button_color')->nullable(); // إضافة حقل جديد
+            $table->string('button_color')->nullable();
             $table->timestamps();
         });
     }

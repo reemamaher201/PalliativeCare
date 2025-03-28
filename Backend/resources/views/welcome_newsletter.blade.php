@@ -5,7 +5,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f8ff; /* لون خلفية أزرق فاتح */
+            background-color: #f0f8ff;
             padding: 20px;
             margin: 0;
             color: #333;
@@ -21,7 +21,7 @@
             border: 1px solid #e0e0e0;
         }
         h1 {
-            color: #3193a5; /* لون أزرق سماوي */
+            color: #3193a5;
             text-align: center;
             margin-bottom: 20px;
             border-bottom: 2px solid #34aec6;
@@ -42,7 +42,7 @@
         }
         .button {
             display: inline-block;
-            background-color: #34aec6; /* لون أزرق سماوي */
+            background-color: #34aec6;
             color: white;
             padding: 12px 20px;
             border-radius: 8px;
@@ -54,7 +54,7 @@
             transition: background-color 0.3s ease;
         }
         .button:hover {
-            background-color: #56aabc; /* لون أزرق سماوي أفتح عند التحويم */
+            background-color: #56aabc;
         }
         .icon {
             width: 24px;

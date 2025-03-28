@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('patient_modification_requests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id'); // معرف المريض
-            $table->string('type'); // نوع الطلب: update أو delete
-            $table->json('data')->nullable(); // بيانات التعديل (في حالة التعديل)
-            $table->string('status')->default('pending'); // حالة الطلب: pending, approved, rejected
-            $table->unsignedBigInteger('requested_by'); // المستخدم الذي أرسل الطلب
+            $table->unsignedBigInteger('patient_id');
+            $table->string('type');
+            $table->json('data')->nullable();
+            $table->string('status')->default('pending');
+            $table->unsignedBigInteger('requested_by');
             $table->timestamps();
 
-            // العلاقات
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
             $table->foreign('requested_by')->references('id')->on('users')->onDelete('cascade');
         });

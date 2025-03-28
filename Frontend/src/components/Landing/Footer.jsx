@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaLink, FaPhone } from "react-icons/fa";
-import axios from "axios"; // تأكد من استيراد axios
+import axios from "axios";
 
 const Footer = ({ footer_text, background_color, buttonColor, fastLinks, socialLinks }) => {
     const [email, setEmail] = useState("");
@@ -21,13 +21,10 @@ const Footer = ({ footer_text, background_color, buttonColor, fastLinks, socialL
             setEmail("");
         } catch (error) {
             if (error.response) {
-                // خطأ من الخادم (مثل بريد مسجل مسبقاً)
                 setMessage(error.response.data.message || "حدث خطأ أثناء الاشتراك");
             } else if (error.request) {
-                // لم يتم استلام رد من الخادم
                 setMessage("لا يوجد اتصال بالخادم، حاول لاحقاً");
             } else {
-                // خطأ في إعداد الطلب
                 setMessage("حدث خطأ، يرجى المحاولة مرة أخرى");
             }
         } finally {
@@ -39,7 +36,6 @@ const Footer = ({ footer_text, background_color, buttonColor, fastLinks, socialL
         <footer dir="rtl" className="text-white py-8 rounded-lg px-5" style={{ backgroundColor: background_color }}>
             <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-right">
 
-                {/* قسم الروابط السريعة */}
                 <div>
                     <h3 className="text-lg font-bold mb-4">روابط سريعة</h3>
                     <ul className="space-y-2">
@@ -58,7 +54,6 @@ const Footer = ({ footer_text, background_color, buttonColor, fastLinks, socialL
                     </ul>
                 </div>
 
-                {/* قسم معلومات التواصل */}
                 <div>
                     <h3 className="text-lg font-bold mb-4">معلومات التواصل</h3>
                     <ul className="space-y-2">
@@ -77,7 +72,6 @@ const Footer = ({ footer_text, background_color, buttonColor, fastLinks, socialL
                     </ul>
                 </div>
 
-                {/* قسم النشرة البريدية */}
                 <div>
                     <h3 className="text-lg font-bold mb-4">اشترك بالنشرة البريدية</h3>
                     <form onSubmit={handleSubscribe} className="max-w-md mx-auto">
@@ -89,8 +83,7 @@ const Footer = ({ footer_text, background_color, buttonColor, fastLinks, socialL
                                 placeholder="name@example.com"
                                 className="w-full px-4 py-2 rounded text-gray-800"
                                 required
-                                dir="ltr" // لاتجاه نص البريد الإلكتروني
-                            />
+                                dir="ltr"                             />
                         </div>
                         <button
                             type="submit"

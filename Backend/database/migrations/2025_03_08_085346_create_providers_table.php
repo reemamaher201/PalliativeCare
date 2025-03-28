@@ -15,7 +15,7 @@ class CreateProvidersTable extends Migration
     {
         Schema::create('providers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // ربط بجدول المستخدمين
+            $table->unsignedBigInteger('user_id');
             $table->string('name');
             $table->string('identity_number')->unique();
             $table->string('username')->unique();

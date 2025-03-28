@@ -11,7 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // في ملف migration
         Schema::table('medicines', function (Blueprint $table) {
             $table->tinyInteger('delete_status')->default(0); // 0: لا يوجد طلب حذف, 1: طلب حذف معلق, 2: طلب حذف مرفوض
         });

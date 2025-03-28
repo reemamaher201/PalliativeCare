@@ -17,10 +17,21 @@ class MedicineBookingController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
-            $bookings = MedicineBooking::with(['user', 'medicine'])
-                ->where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
+            Log::info('User authenticated', ['user_id' => $user->id, 'user_type' => $user->user_type]);
+
+            // بناء الاستعلام الأساسي مع العلاقات
+            $query = MedicineBooking::with(['user', 'medicine'])
+                ->orderBy('created_at', 'desc');
+
+            // إذا كان المستخدم مريضًا (وليس وزارة) نضيف شرط user_id
+            if ($user->user_type === 'patient') {
+                $query->where('user_id', $user->id);
+            }
+
+            // إذا كان المستخدم من الوزارة يمكنه رؤية الكل بدون فلترة
+            $bookings = $query->get();
+
+            Log::info('Bookings retrieved', ['count' => $bookings->count()]);
 
             return response()->json([
                 'status' => 'success',
@@ -28,6 +39,10 @@ class MedicineBookingController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Error retrieving bookings', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'حدث خطأ أثناء جلب طلبات الأدوية'
@@ -198,6 +213,27 @@ class MedicineBookingController extends Controller
                 'status' => 'error',
                 'message' => 'حدث خطأ أثناء الموافقة على الحجز'
             ], 500);
+        }
+    }
+
+    public function checkData(Request $request)
+    {
+        try {
+            $totalBookings = MedicineBooking::count();
+
+            $user = JWTAuth::parseToken()->authenticate();
+
+            $testBooking = MedicineBooking::with(['user', 'medicine'])->first();
+
+            return response()->json([
+                'total_bookings' => $totalBookings,
+                'current_user_id' => $user ? $user->id : null,
+                'test_booking' => $testBooking,
+                'user_bookings_count' => $user ? MedicineBooking::where('user_id', $user->id)->count() : 0
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

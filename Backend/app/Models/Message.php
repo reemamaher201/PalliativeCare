@@ -15,14 +15,12 @@ class Message extends Model
         'message',
     ];
 
-    // العلاقة مع المرسل
-    public function sender()
+     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
-    // العلاقة مع المستقبل
-    public function receiver()
+     public function receiver()
     {
         return $this->belongsTo(User::class, 'receiver_id');
     }

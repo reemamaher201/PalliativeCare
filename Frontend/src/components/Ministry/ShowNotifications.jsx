@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Sidebar from "./comp/Sidebar.jsx";
 import Modal from "react-modal";
+import Header from "./comp/Header.jsx";
 
 const ShowNotifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -276,16 +277,12 @@ const ShowNotifications = () => {
             {/* الشريط الجانبي */}
             <Sidebar />
 
-            <main className="flex-1 p-6">
-                <header className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-bold">أحمد محمد</h1>
-                    <div className="flex space-x-4">
-                        <i className="fas fa-bell text-gray-500 text-lg cursor-pointer"></i>
-                        <i className="fas fa-envelope text-gray-500 text-lg cursor-pointer"></i>
-                    </div>
-                </header>
+            <main className="flex-1 ">
+                {/* Header */}
+                <Header/>
 
-                <div className="flex justify-between items-center mb-6">
+                {/* Search bar and add button */}
+                <div className="flex justify-between items-center mb-6 p-6">
                     <div className="relative w-1/3">
                         <input
                             type="text"

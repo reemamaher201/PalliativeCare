@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Modal from "react-modal";
 import Sidebar from "./comp/Sidebar.jsx";
+import Header from "./comp/Header.jsx";
 
 const ShowProvider = () => {
     const [providers, setProviders] = useState([]);
@@ -67,15 +68,15 @@ const ShowProvider = () => {
     const closeModal = () => {
         setModalIsOpen(false);
         setProviderToDelete(null);
-        setErrorMessage(null); // مسح رسالة الخطأ عند إغلاق النافذة
-        setSuccessMessage(null); // مسح رسالة النجاح عند إغلاق النافذة
+        setErrorMessage(null);
+        setSuccessMessage(null);
     };
 
     const confirmDelete = async () => {
         setIsDeleting(true);
         setErrorMessage(null);
         setSuccessMessage(null);
-        setDeletionAttempted(true); // تم محاولة الحذف
+        setDeletionAttempted(true);
         try {
             const token = localStorage.getItem("token");
             const response = await axios.delete(`http://127.0.0.1:8000/api/deleteprovider/${providerToDelete}`, {
@@ -103,7 +104,7 @@ const ShowProvider = () => {
     };
 
     const handleDelete = (id) => {
-        console.log("Deleting provider with ID:", id); // فحص الـ ID
+        console.log("Deleting provider with ID:", id);
         openModal(id);
     };
 
@@ -184,7 +185,6 @@ const ShowProvider = () => {
                 overlayClassName="Overlay"
             >
                 <div className="flex flex-col items-center justify-center p-6">
-                    {/* عرض رسالة النجاح أو الخطأ فقط بعد محاولة الحذف */}
                     {deletionAttempted ? (
                         <>
                             {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
@@ -277,16 +277,12 @@ const ShowProvider = () => {
             {/* الشريط الجانبي */}
             <Sidebar/>
 
-            <main className="flex-1 p-6">
-                <header className="flex justify-between items-center mb-6">
-                    <h1 className="text-xl font-bold">{ministryName}</h1>
-                    <div className="flex space-x-4">
-                        <i className="fas fa-bell text-gray-500 text-lg cursor-pointer"></i>
-                        <i className="fas fa-envelope text-gray-500 text-lg cursor-pointer"></i>
-                    </div>
-                </header>
+            <main className="flex-1 ">
+                {/* Header */}
+                <Header/>
 
-                <div className="flex justify-between items-center mb-6">
+                {/* Search bar and add button */}
+                <div className="flex justify-between items-center mb-6 p-6">
                     <div className="relative w-1/3">
                         <input
                             type="text"

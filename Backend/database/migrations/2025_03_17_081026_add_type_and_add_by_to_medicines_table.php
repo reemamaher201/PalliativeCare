@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('medicines', function (Blueprint $table) {
-            $table->string('type')->nullable(); // إضافة عمود type
-            $table->unsignedBigInteger('add_by')->nullable(); // يمكن أن يكون nullable مؤقتًا
+            $table->string('type')->nullable();
+            $table->unsignedBigInteger('add_by')->nullable();
             $table->foreign('add_by')->references('id')->on('users')->onDelete('cascade');
         });
     }

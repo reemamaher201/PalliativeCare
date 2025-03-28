@@ -12,7 +12,6 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
-    // تعريف ثوابت لأنواع المستخدمين
     const USER_TYPE_MINISTRY = 0;
     const USER_TYPE_PROVIDER = 1;
     const USER_TYPE_PATIENT = 2;
