@@ -118,7 +118,7 @@ const Login = () => {
 
                 {/* خيارات إضافية */}
                 <div className="text-center mt-4">
-                    <a href="/signup" className="text-cyan-500 hover:underline">
+                    <a href="/register" className="text-cyan-500 hover:underline">
                         أنشئ حساب
                     </a>
                 </div>

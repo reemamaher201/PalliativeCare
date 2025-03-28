@@ -134,53 +134,9 @@ function LandingPage() {
                 buttonColor={settings?.button_color}
             />
 
-            {services.length > 0 ? (
-                <ServicesSection
-                    services={services.map(service => ({
-                        ...service,
-                        title: t(service.title_ar, service.title_en),
-                        description: t(service.description_ar, service.description_en)
-                    }))}
-                    buttonColor={settings?.button_color}
-                    title={t("خدماتنا", "Our Services")}
-                />
-            ) : (
-                <p className="text-center p-10">
-                    {t("لا توجد خدمات متاحة", "No services available")}
-                </p>
-            )}
-
-            {features.length > 0 ? (
-                <FeaturesSection
-                    features={features.map(feature => ({
-                        ...feature,
-                        title: t(feature.title_ar, feature.title_en),
-                        description: t(feature.description_ar, feature.description_en)
-                    }))}
-                    buttonColor={settings?.button_color}
-                    title={t("مميزاتنا", "Our Features")}
-                />
-            ) : (
-                <p className="text-center p-10">
-                    {t("لا توجد ميزات متاحة", "No features available")}
-                </p>
-            )}
-
-            {blogs.length > 0 ? (
-                <BlogSection
-                    blogs={blogs.map(blog => ({
-                        ...blog,
-                        title: t(blog.title_ar, blog.title_en),
-                        content: t(blog.content_ar, blog.content_en)
-                    }))}
-                    buttonColor={settings?.button_color}
-                    title={t("مدوناتنا", "Our Blogs")}
-                />
-            ) : (
-                <p className="text-center p-10">
-                    {t("لا توجد مدونات متاحة", "No blogs available")}
-                </p>
-            )}
+            {services.length > 0 ? <ServicesSection services={services} /> : <p className="text-center p-10">لا توجد خدمات متاحة</p>}
+            {features.length > 0 ? <FeaturesSection features={features} /> : <p className="text-center p-10">لا توجد ميزات متاحة</p>}
+            {blogs.length > 0 ? <BlogSection blogs={blogs} /> : <p className="text-center p-10">لا توجد مدونات متاحة</p>}
 
             <section className="py-12 px-8" dir="rtl">
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Sidebar from './component/Sidebar'; // استيراد السايدبار
-import Navbar from './component/Navbar';
+import Navbar from './component/proNavbar.jsx';
 import {useNavigate} from "react-router-dom"; // استيراد الناف بار
 
 const ReqAddPatient = () => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./component/Sidebar.jsx";
-import Navbar from "./component/Navbar.jsx";
+import Navbar from "./component/proNavbar.jsx";
 import ChatButton from "../Utilties/ChatButton.jsx";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faPhone, faUser } from '@fortawesome/free-solid-svg-icons';

@@ -4,6 +4,8 @@ import Header from "./comp/Header.jsx";
 import Sidebar from "./comp/Sidebar.jsx";
 import { BeatLoader } from 'react-spinners';
 import Navbar from "../Patients/PNavbar.jsx";
+import Navbar1 from "../Providers/component/proNavbar.jsx";
+import Sidebar1 from "../Providers/component/Sidebar.jsx";
 
 const ChatPage = () => {
     const [users, setUsers] = useState([]);
@@ -179,8 +181,9 @@ const ChatPage = () => {
             return [];
         }
     };
-    const isPatient = currentUser?.user_type === 2; // تحقق إذا كان المستخدم الحالي مريضاً
-
+    const isPatient = currentUser?.user_type === 2;
+    const isProvider = currentUser?.user_type === 1; // مقدم خدمة
+    const isMinistry = currentUser?.user_type === 0; // وزارة
 
     return (
         <div dir="rtl" className="h-screen flex flex-col overflow-hidden">
@@ -192,12 +195,17 @@ const ChatPage = () => {
             ) : (
                 <div className="flex flex-1 min-h-0">
                     {/* عرض Sidebar فقط لغير المرضى */}
-                    {!isPatient && <Sidebar className="overflow-y-auto" />}
-
+                    {isMinistry && <Sidebar className="overflow-y-auto" />}
+                    {isProvider && <Sidebar1 className="overflow-y-auto" />}
                     <div className="flex flex-col flex-1 min-h-0">
                         {/* عرض Navbar للمريض فقط، و Header لغير المرضى */}
-                        {isPatient ? <Navbar /> : <Header className="shrink-0" />}
-
+                        {isPatient ? (
+                            <Navbar />
+                        ) : isProvider ? (
+                            <Navbar1/>
+                        ) : (
+                            <Header className="shrink-0" />
+                        )}
                         <div className="flex flex-1 min-h-0 overflow-hidden">
                         {/* قائمة المستخدمين */}
                         <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4 shadow-md overflow-y-auto">

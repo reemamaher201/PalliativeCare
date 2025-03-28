@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {logout} from "../../../services/Auth/auth.jsx";
 
-const Navbar = () => {
+const pNavbar = () => {
     const [error, setError] = useState("");
     const [providerName, setProviderName] = useState(""); // حالة لتخزين اسم المزود
 
@@ -61,4 +61,4 @@ const Navbar = () => {
     );
 };
 
-export default Navbar;
+export default pNavbar;

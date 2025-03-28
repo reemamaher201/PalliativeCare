@@ -121,24 +121,10 @@ class AuthController extends Controller
         }
 
         $credentials = $request->only('identity_number', 'password');
-        $ip = $request->ip();
-        $cacheKey = "login_attempts_{$ip}";
-
-        // Check rate limiting
-        if ($this->hasTooManyLoginAttempts($request)) {
-            $seconds = $this->availableIn($cacheKey);
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Too many login attempts. Please try again in ' . $seconds . ' seconds.'
-            ], 429);
-        }
 
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
-                $this->incrementLoginAttempts($request);
-
                 Log::warning('Failed login attempt for identity_number: ' . $request->identity_number);
-
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Invalid credentials'
@@ -147,17 +133,12 @@ class AuthController extends Controller
 
             $user = JWTAuth::user();
 
-
             if ($user->email && !$user->email_verified_at) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Email not verified. Please verify your email first.'
                 ], 403);
             }
-
-            // Reset attempts
-            $this->clearLoginAttempts($request);
-
 
             $user->update([
                 'is_active' => 1,

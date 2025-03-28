@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import Sidebar from "./component/Sidebar.jsx";
-import Navbar from "./component/Navbar.jsx";
+import Navbar from "./component/proNavbar.jsx";
 import ChatButton from "../Utilties/ChatButton.jsx";
 import EditPatientModal from "./EditPatientModal.jsx";
 import { Link } from "react-router-dom";

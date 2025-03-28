@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // استيراد useNavigate
 import Sidebar from './component/Sidebar'; // استيراد السايدبار
-import Navbar from './component/Navbar'; // استيراد الناف بار
+import Navbar from './component/proNavbar.jsx'; // استيراد الناف بار
 
 const ReqAddMed = () => {
     const [medData, setMedData] = useState({
