@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PatientController extends Controller
@@ -408,6 +409,36 @@ class PatientController extends Controller
             ->get();
 
         return response()->json($patient);
+    }
+
+    public function updateProfile(Request $request) {
+        try {
+            // (1) جلب المستخدم الحالي من الـ Token
+            $user = JWTAuth::parseToken()->authenticate();
+
+            // (2) إذا لم يتم العثور على المستخدم
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'المستخدم غير موجود أو غير مصرح له'
+                ], 404);
+            }
+
+            // (3) تحديث البيانات
+            $user->update($request->all());
+
+            return response()->json([
+                'success' => true,
+                'user' => $user,
+                'message' => 'تم تحديث الملف الشخصي بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل في التحديث: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
 

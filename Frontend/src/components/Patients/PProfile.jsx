@@ -119,12 +119,16 @@ const UserProfile = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setUserData(response.data.user);
-            setIsEditing(false);
-            alert("تم تحديث البيانات بنجاح");
-        } catch (err) {
-            console.error("Error updating profile:", err);
-            alert(err.response?.data?.message || "فشل في تحديث البيانات");
+            if (response.data.success) {
+                setUserData({
+                    ...response.data.user,
+                    ...response.data.patient // دمج بيانات المريض مع المستخدم
+                });
+                setIsEditing(false);
+                alert("تم التحديث بنجاح!");
+            }
+        } catch (error) {
+            alert(error.response?.data?.error || "حدث خطأ أثناء التحديث");
         }
     };
 
@@ -246,7 +250,18 @@ const UserProfile = () => {
                         />
                         <InfoRow
                             label="العمر"
-                            value={userData.age ? `${userData.age} سنة` : "غير متوفر"}
+                            name="age"
+                            value={isEditing ? formData.age : userData.age}
+                            isEditing={isEditing}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value) || 0;
+                                setFormData(prev => ({
+                                    ...prev,
+                                    age: value >= 1 ? value : 1 // تأكد أن العمر لا يقل عن 1
+                                }));
+                            }}
+                            type="number" // أضف هذا السطر
+                            min="1" // أضف هذا السطر
                         />
                         <InfoRow
                             label="الجنس"
@@ -423,17 +438,18 @@ const UserProfile = () => {
     );
 };
 
-const InfoRow = ({ label, name, value, isEditing = false, onChange }) => {
+const InfoRow = ({ label, name, value, isEditing = false, onChange, type = "text", min }) => {
     return (
         <div className="mb-4">
             <label className="block text-gray-700 text-right mb-2">{label}</label>
             {isEditing ? (
                 <input
-                    type="text"
+                    type={type}
                     name={name}
                     value={value || ""}
                     onChange={onChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+                    min={min}
                 />
             ) : (
                 <input

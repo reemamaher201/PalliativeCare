@@ -100,62 +100,58 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * تسجيل الدخول
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+
     public function login(Request $request)
     {
+        // 1. التحقق من صحة البيانات
         $validator = Validator::make($request->all(), [
-            'identity_number' => 'required|string|regex:/^[0-9]+$/',
-            'password' => 'required|string',
+            'identity_number' => 'required|string',
+            'password' => 'required|string|min:8',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
+                'message' => 'Validation error',
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        $credentials = $request->only('identity_number', 'password');
+        // 2. البحث عن المستخدم برقم الهوية
+        $user = User::where('identity_number', $request->identity_number)->first();
 
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'رقم الهوية غير مسجل'
+            ], 404);
+        }
+
+        // 3. التحقق من كلمة المرور يدوياً (للتأكد من المشكلة)
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'كلمة المرور غير صحيحة'
+            ], 401);
+        }
+
+        // 4. إنشاء توكن JWT يدوياً
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                Log::warning('Failed login attempt for identity_number: ' . $request->identity_number);
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Invalid credentials'
-                ], 401);
-            }
-
-            $user = JWTAuth::user();
-
-            if ($user->email && !$user->email_verified_at) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Email not verified. Please verify your email first.'
-                ], 403);
-            }
-
-            $user->update([
-                'is_active' => 1,
-                'last_login_at' => Carbon::now(),
-            ]);
+            $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Login successful',
-                'data' => $this->prepareUserData($user, $token)
+                'message' => 'تم التسجيل بنجاح',
+                'data' => [
+                    'token' => $token,
+                    'user' => $user
+                ]
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Login error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Login failed. Please try again.'
+                'message' => 'فشل إنشاء التوكن: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -307,7 +303,7 @@ class AuthController extends Controller
      */
     protected function hasTooManyLoginAttempts(Request $request)
     {
-        $maxAttempts = 5;
+        $maxAttempts = 20;
         $decayMinutes = 15;
         return Cache::has($this->throttleKey($request)) &&
             Cache::get($this->throttleKey($request)) >= $maxAttempts;

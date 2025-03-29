@@ -153,3 +153,4 @@ Route::get('/medicine-bookings', [MedicineBookingController::class, 'index']);
 Route::patch('/medicine-bookings/{id}/status', [MedicineBookingController::class, 'updateStatus']);
 
 Route::get('/checkData', [MedicineBookingController::class, 'index']);
+Route::put('/update-profile', [PatientController::class, 'updateProfile']); // PUT للتحديث
