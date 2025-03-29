@@ -133,11 +133,18 @@ function LandingPage() {
                 main_text={t(settings?.main_text_ar, settings?.main_text_en)}
                 buttonColor={settings?.button_color}
             />
+            <section id="services">
 
             {services.length > 0 ? <ServicesSection services={services} /> : <p className="text-center p-10">لا توجد خدمات متاحة</p>}
-            {features.length > 0 ? <FeaturesSection features={features} /> : <p className="text-center p-10">لا توجد ميزات متاحة</p>}
-            {blogs.length > 0 ? <BlogSection blogs={blogs} /> : <p className="text-center p-10">لا توجد مدونات متاحة</p>}
+            </section>
+                <section id="features">
 
+            {features.length > 0 ? <FeaturesSection features={features} /> : <p className="text-center p-10">لا توجد ميزات متاحة</p>}
+            </section>
+            <section id="blogs">
+
+            {blogs.length > 0 ? <BlogSection blogs={blogs} /> : <p className="text-center p-10">لا توجد مدونات متاحة</p>}
+            </section>
             <section className="py-12 px-8" dir="rtl">
 
                 <div className="container mx-auto text-center">

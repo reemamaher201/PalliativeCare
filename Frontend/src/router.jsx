@@ -27,6 +27,7 @@ import ChatPage from "./components/Ministry/Chat.jsx";
 import GeneralAdvice from "./components/Patients/GeneralAdvice.jsx";
 import Support from "./components/Patients/Support.jsx";
 import MedicineBookings from "./components/Patients/MedicineBookings.jsx";
+import FeaturesSection from "./components/Landing/FeaturesSection.jsx";
 
 const RouterComponent = () => {
     return (

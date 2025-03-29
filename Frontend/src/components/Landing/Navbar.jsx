@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaLanguage } from "react-icons/fa";
+import { HashLink as Links } from 'react-router-hash-link';
 
 const Navbar = ({ logo, background_color, onLanguageChange }) => {
     return (
@@ -23,14 +24,22 @@ const Navbar = ({ logo, background_color, onLanguageChange }) => {
                     <li>
                         <Link to="/" className="hover:underline">الصفحة الرئيسية</Link>
                     </li>
+                    <Links
+                    to="/#features"
+                    className="hover:underline"
+                    scroll={(el) => el.scrollIntoView({ behavior: 'smooth' })}
+                >
+                    مزايا التسجيل
+                </Links>
                     <li>
-                        <Link to="/features" className="hover:underline">مزايا التسجيل</Link>
+                        <Links to="/#services" className="hover:underline"
+                              scroll={(el) => el.scrollIntoView({ behavior: 'smooth' })}
+                        >الخدمات</Links>
                     </li>
                     <li>
-                        <Link to="/services" className="hover:underline">الخدمات</Link>
-                    </li>
-                    <li>
-                        <Link to="/blog" className="hover:underline">نصائح ومدونات</Link>
+                        <Links to="/#blogs" className="hover:underline"
+                               scroll={(el) => el.scrollIntoView({ behavior: 'smooth' })}
+                        >نصائح ومدونات</Links>
                     </li>
                 </ul>
                 <div className="flex items-center space-x-4">

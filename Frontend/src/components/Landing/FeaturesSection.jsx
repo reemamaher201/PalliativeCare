@@ -87,7 +87,7 @@ const FeaturesSection = ({ features }) => {
 
     return (
         <section className="py-12 px-4 sm:px-8 bg-gray-50 relative" dir="rtl">
-            <div className="container mx-auto text-center relative">
+            <div  className="container mx-auto text-center relative">
                 <h2 className="text-3xl font-extrabold mb-8 text-gray-900">⭐ مزايا التسجيل</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 mb-8">
